@@ -1,0 +1,52 @@
+dependencies:
+  espressif/esp-idf-cxx:
+    component_hash: 2fa63e4e725f0c2d3dd6d99da8a91d404b4b49667088b1be0f336eb9c13ff17f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.2-beta
+  espressif/esp_lvgl_port:
+    component_hash: 63189e2fc4d9b176bd92061f7bd0ab00c0ad9b8830d34757188ab5353adcb122
+    dependencies:
+    - name: idf
+      version: '>=5.1'
+    - name: lvgl/lvgl
+      public: true
+      version: '>=8,<10'
+    source:
+      git: https://github.com/espressif/esp-bsp.git
+      path: components/esp_lvgl_port
+      type: git
+    version: 21c6cd051751304c80d699c850b12c310b6f9a1d
+  hiruna/esp-idf-aw9364:
+    component_hash: 4564086e52d5a39b267243f32cf9318b3ff9ae43180634f533b5a970b8812e8c
+    dependencies: []
+    source:
+      git: https://github.com/hiruna/esp-idf-aw9364.git
+      path: .
+      type: git
+    version: 88960d249a5219e4e4a2f0715b9444954b005e93
+  idf:
+    source:
+      type: idf
+    version: 5.5.1
+  lvgl/lvgl:
+    component_hash: 17e68bfd21f0edf4c3ee838e2273da840bf3930e5dbc3bfa6c1190c3aed41f9f
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 9.4.0
+direct_dependencies:
+- espressif/esp-idf-cxx
+- espressif/esp_lvgl_port
+- hiruna/esp-idf-aw9364
+- idf
+- lvgl/lvgl
+manifest_hash: f63e8ecf1834cc298ba0e3c891924effa658c06d11854d81c73af61f6db6721b
+target: esp32s3
+version: 2.0.0

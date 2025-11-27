@@ -1,0 +1,23 @@
+idf_component_register(SRCS 
+      "heatsens.cpp"
+      "temp_model.cpp"
+      "bmp280.cpp"
+      "mqtt.cpp"
+      "nvs.cpp"
+      "wifi.cpp"
+      "ui/ui.cpp"
+      "ui/field.cpp"
+      "fonts/Rubik_Regular_36.c"
+      "fonts/Rubik_Medium_48.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+      driver
+      esp_timer
+      espressif__esp-idf-cxx
+      tdisplays3
+      esp_wifi
+      nvs_flash
+      mqtt
+      lvgl_weact_epaper
+      json
+    )

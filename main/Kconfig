@@ -1,0 +1,56 @@
+menu "HEATSENS"
+    config HEATSENS_DEVICE_ID
+        string "Device Id"
+        default "Bad"
+        help
+            This device id will be part of the mqtt topics
+
+    config HEATSENS_CURRENT_TEMP_TOPIC
+        string "Publish Temperature Topic"
+        default "heatsens/cur_temp/"
+        help
+            Topic to send current temperature 
+
+    config HEATSENS_TARGET_TEMP_TOPIC
+        string "Publish Temperature Topic"
+        default "heatsens/tgt_temp/"
+        help
+            Topic to read target temperature
+
+    config HEATSENS_CTRL_INFO_TOPIC
+        string "Subscribe controller info Topic"
+        default "heatctrl/infofor/"
+        help
+            Read controller's state on this topic
+
+    config HEATSENS_SENSOR_READ_INTERVAL
+        int "Sensor read interval in seconds"
+        default 300
+        help
+            Sensor read interval in seconds
+
+    config HEATSENS_HISTERESIS
+        int "Histeresis * 100. 0.5 degrees is 0.5 * 100 = 50"
+        default 50
+        help
+            Histeresis for toggling heating
+        
+    config HEATSENS_TIMEZONE
+        string "Timezone for time stamps"
+        default "CET-1CEST,M3.5.0,M10.5.0/3"
+        help
+            Posix time zone
+
+    config HEATSENS_TIME_SERVER_0
+        string "Time Server 0"
+        default "0.de.pool.ntp.org"
+        help
+            Time Server 0
+
+    config HEATSENS_TIME_SERVER_1
+        string "Time Server 1"
+        default "1.de.pool.ntp.org"
+        help
+            Time Server 1
+
+endmenu

@@ -1,0 +1,7 @@
+key,type,encoding,value
+config,namespace,,
+wifi_ssid,data,string,YOUR_WIFI_SSID
+wifi_password,data,string,YOUR_WIFI_PASSWORD
+mqtt_broker,data,string,mqtt://YOUR_BROKER:1883
+mqtt_user,data,string,YOUR_USER
+mqtt_password,data,string,YOUR_PASSWORD
