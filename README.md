@@ -1,5 +1,10 @@
 # Room temperature sensor (heatsens)
 
+# Disclaimer
+
+This is a personal fun project not meant to be used outside my own apartement.
+Anyone feel free to fork and use it on their own risk.
+
 # Overview
 
 This firmware implements a heat sensor. It is part of a complete floor heating system for my apartement.
@@ -14,7 +19,8 @@ All communication is done over mqtt5. Temperatures are always in degrees celsius
 
 ### Topic heatctrl/infofor/Flur
 
-qos 1, retained true
+- qos 1
+- retained true
 
 The central controller publishes its heating state for the room on this topic. 'Flur' is the name of the room.
 
@@ -27,14 +33,15 @@ heatctrl/infofor/Flur
 }
 ```
 
-0 - is not heating
-1 - it is heating
+- 0 - is not heating
+- 1 - it is heating
 
 The sensor displays this information to the user.
 
 ### Topic heatsens/tgt_temp/Flur
 
-qos 1, retained true
+- qos 1
+- retained true
 
 This topic is used to configure the target temperature for this room. In this example the room is 'Flur'.
 The target temperature could be set by a home automation platform's UI.
@@ -51,7 +58,8 @@ This sets the target temperature to 21.0 degrees celsius.
 
 ### heatsens/cur_temp/Flur
 
-qos 1, retained false
+- qos 1
+- retained false
 
 The sensor publishes
 
@@ -72,9 +80,10 @@ The sensor publishes
 The central controller is expected to obey the is_heating flag and turn on the heating valve for this room.
 
 # Calculating heating flag
-If the target temperature is greater than the current temperature + histeresis, the __is_heating__ flag is set to true.
-If the current temperature is greater than the target temperature + histeresis, the __is_heating__ flag is set to false.
-The histeresis value can be configured. Default is 0.5 degrees Celsius. 
+
+If the target temperature is greater than the current temperature + histeresis, the **is_heating** flag is set to true.
+If the current temperature is greater than the target temperature + histeresis, the **is_heating** flag is set to false.
+The histeresis value can be configured. Default is 0.5 degrees Celsius.
 
 # Configure Credentials
 
