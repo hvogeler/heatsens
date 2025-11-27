@@ -5,6 +5,7 @@
 #include <mutex>
 #include <esp_timer.h>
 #include "cJSON.h"
+#include "mqtt_logger.hpp"
 
 class TempModel
 {
@@ -15,6 +16,7 @@ private:
     bool is_heating_requested_;
     bool is_heating_;
     mutable std::mutex mutex_;
+    MqttLogger logger;
 
 public:
     // Delete copy constructor and assignment operator
@@ -64,7 +66,7 @@ public:
 
 private:
     // Private constructor
-    TempModel() : cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false)
+    TempModel() : cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false), logger(MqttLogger())
     {
         // Don't initialize BMP280 here - I2C must be set up first
     }

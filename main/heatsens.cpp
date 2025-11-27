@@ -9,6 +9,7 @@
 #include "mqtt.hpp"
 #include <time.h>
 #include <sys/time.h>
+#include "mqtt_logger.hpp"
 
 #define TAG "heatsens"
 

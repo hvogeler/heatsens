@@ -38,6 +38,7 @@ esp_err_t Bmp280::read_calibration()
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG.c_str(), "Failed to read calibration after 3 attempts");
+        logger.error(TAG, "Failed to read calibration after 3 attempts");
         return err;
     }
 
@@ -66,6 +67,7 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG.c_str(), "Failed to trigger forced mode");
+        logger.error(TAG, "Failed to trigger forced mode");
         return err;
     }
 
@@ -81,6 +83,8 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
         if (err != ESP_OK)
         {
             ESP_LOGE(TAG.c_str(), "Failed to read status register");
+            logger.error(TAG, "Failed to read status register");
+
             return err;
         }
 
@@ -95,6 +99,8 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
     if (timeout == 0)
     {
         ESP_LOGW(TAG.c_str(), "Measurement timeout - status: 0x%02x", status);
+        logger.error(TAG, "Measurement timeout - status: 0x%02x", status);
+
         // Continue anyway - data might still be valid
     }
 
@@ -104,6 +110,7 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG.c_str(), "Failed to read measurement data");
+        logger.error(TAG, "Failed to read measurement data");
         return err;
     }
 
@@ -114,6 +121,7 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
     if (*raw_temp == 0 || *raw_temp == 0x80000 || *raw_press == 0 || *raw_press == 0x80000)
     {
         ESP_LOGW(TAG.c_str(), "Invalid raw values - temp: 0x%x, press: 0x%x", *raw_temp, *raw_press);
+        logger.warning(TAG, "Invalid raw values - temp: 0x%x, press: 0x%x", *raw_temp, *raw_press);
         return ESP_ERR_INVALID_RESPONSE;
     }
     return ESP_OK;

@@ -23,6 +23,12 @@ menu "HEATSENS"
         help
             Read controller's state on this topic
 
+    config HEATSENS_LOG_TOPIC
+        string "Log Topic"
+        default "log/floorheat/dev/heatsens/"
+        help
+            Log topic. device-id and severity added dynamically
+
     config HEATSENS_SENSOR_READ_INTERVAL
         int "Sensor read interval in seconds"
         default 300

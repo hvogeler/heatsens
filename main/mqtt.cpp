@@ -55,10 +55,20 @@ void Mqtt::publish(std::string json_doc)
 {
     if (!mqtt_client)
     {
-        ESP_LOGE(TAG.c_str(), "Not publishing because mqtt client not initialized");
+        ESP_LOGE(TAG.c_str(), "Not publishing cur_temp because mqtt client not initialized");
         return;
     }
     msg_id = esp_mqtt_client_publish(mqtt_client, current_temp_topic.c_str(), json_doc.c_str(), 0, 1, 1);
+}
+
+void Mqtt::publish_log(std::string log_topic, std::string json_doc)
+{
+    if (!mqtt_client)
+    {
+        ESP_LOGE(TAG.c_str(), "Not publishing log because mqtt client not initialized");
+        return;
+    }
+    msg_id = esp_mqtt_client_publish(mqtt_client, log_topic.c_str(), json_doc.c_str(), 0, 1, 0);
 }
 
 void Mqtt::subscribe()

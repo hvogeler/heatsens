@@ -87,6 +87,7 @@ public:
     // Add your public methods here
     esp_err_t connect();
     void publish(std::string);
+    void publish_log(std::string, std::string);
     void subscribe();
 
 private:

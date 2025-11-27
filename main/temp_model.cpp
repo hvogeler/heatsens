@@ -6,7 +6,7 @@
 #include "bmp280.hpp"
 #include "nvs.hpp"
 
-static const char *TAG = "temp_model";
+static std::string TAG = "temp_model";
 
 void TempModel::init()
 {
@@ -19,7 +19,7 @@ void TempModel::init()
     tgt_temp_ /= 10.0;
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "No target temp found in NVS");
+        ESP_LOGE(TAG.c_str(), "No target temp found in NVS");
     }
 }
 
@@ -32,7 +32,7 @@ void TempModel::set_tgt_temp(double temp)
     esp_err_t ret = nvs.write("tgt_temp", temp * 10.0);
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to write target temp to NVS");
+        ESP_LOGE(TAG.c_str(), "Failed to write target temp to NVS");
     }
 }
 
@@ -44,14 +44,16 @@ void TempModel::toggle_is_heating()
     bool should_turn_on_heater = temp_diff > histeresis && !is_heating_requested_;
     if (should_turn_on_heater)
     {
-        ESP_LOGI(TAG, "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        ESP_LOGI(TAG.c_str(), "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        logger.info(TAG, "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         is_heating_requested_ = true;
     }
 
     bool should_turn_off_heater = -temp_diff > histeresis && is_heating_requested_;
     if (should_turn_off_heater)
     {
-        ESP_LOGI(TAG, "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        ESP_LOGI(TAG.c_str(), "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        logger.info(TAG, "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         is_heating_requested_ = false;
     }
 }
@@ -92,7 +94,7 @@ std::string TempModel::toJson()
 
     char *json_str = cJSON_Print(doc);
     std::string ret(json_str);
-    free(json_str);  // Free the memory allocated by cJSON_Print
+    free(json_str); // Free the memory allocated by cJSON_Print
     cJSON_Delete(doc);
     return ret;
 }
@@ -109,7 +111,7 @@ void TempModel::update_cur_temp_cb()
 
         if (bmp280.read_raw(&raw_temp, &raw_press) != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to read raw sensor data");
+            ESP_LOGE(TAG.c_str(), "Failed to read raw sensor data");
             return;
         }
 
@@ -120,10 +122,11 @@ void TempModel::update_cur_temp_cb()
         temp_model.set_cur_temp(temperature);
         temp_model.toggle_is_heating();
 
-        ESP_LOGI(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
+        ESP_LOGI(TAG.c_str(), "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
+        temp_model.logger.info(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
     }
     else
     {
-        ESP_LOGE(TAG, "BMP280 sensor not initialized");
+        ESP_LOGE(TAG.c_str(), "BMP280 sensor not initialized");
     }
 }

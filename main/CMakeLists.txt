@@ -5,6 +5,7 @@ idf_component_register(SRCS
       "mqtt.cpp"
       "nvs.cpp"
       "wifi.cpp"
+      "mqtt_logger.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"
       "fonts/Rubik_Regular_36.c"

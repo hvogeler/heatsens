@@ -3,6 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "mqtt_logger.hpp"
 
 #define I2C_SDA_PIN GPIO_NUM_43
 #define I2C_SCL_PIN GPIO_NUM_44
@@ -52,6 +53,7 @@ class Bmp280
     uint8_t i2c_dev_addr;
 
     mutable std::mutex mutex_;
+    MqttLogger logger;
 
 public:
     bool is_initialized = false;
@@ -76,7 +78,7 @@ public:
 
 private:
     Bmp280() : i2c_bus_handle(nullptr),
-               dev_handle(nullptr), i2c_dev_addr(0)
+               dev_handle(nullptr), i2c_dev_addr(0), logger(MqttLogger())
     {
         // Don't initialize BMP280 here - I2C must be set up first
     }
