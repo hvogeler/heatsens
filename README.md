@@ -3,7 +3,7 @@
 # Disclaimer
 
 This is a personal fun project not meant to be used outside my own apartement.
-Anyone feel free to fork and use it on their own risk.
+Feel free use it at your own risk.
 
 # Overview
 
