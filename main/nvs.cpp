@@ -37,7 +37,7 @@ esp_err_t Nvs::read(std::string key, double &v)
 esp_err_t Nvs::read(std::string key, std::string &v)
 {
     char buf[65];
-    size_t len;
+    size_t len = sizeof(buf);
     esp_err_t ret = nvs_get_str(handle_, key.c_str(), buf, &len);
     if (ret == ESP_OK)
     {
