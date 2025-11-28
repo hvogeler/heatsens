@@ -6,7 +6,7 @@
 #include "nvs.hpp"
 #include <esp_task_wdt.h>
 
-static const char *TAG = "wifi";
+static const char *TAG = "hts-wifi";
 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1

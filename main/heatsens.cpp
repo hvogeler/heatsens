@@ -15,7 +15,7 @@
 
 // TODO: set to lightsleep between measurments. wake on interval.
 // TODO: Turn display off in light sleep. Wake on button press.
-// TODO: Log to a mqtt topic 'log/deviceid/severity/component'
+
 
 extern "C" void app_main(void)
 {
@@ -29,7 +29,7 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(ret);
 
     esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("mqtt", ESP_LOG_VERBOSE);
+    esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
     esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
     std::string init_error = "";
 

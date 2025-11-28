@@ -5,7 +5,7 @@
 #include "temp_model.hpp"
 #include "nvs.hpp"
 
-static std::string TAG = "mqtt";
+static std::string TAG = "hts_mqtt";
 
 static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
 
