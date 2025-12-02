@@ -29,3 +29,4 @@ dependencies:
   hiruna/esp-idf-aw9364:
     git: https://github.com/hiruna/esp-idf-aw9364.git
     version: main
+  espressif/button: ^4.1.4

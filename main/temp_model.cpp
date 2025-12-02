@@ -122,7 +122,7 @@ void TempModel::update_cur_temp_cb()
         temp_model.set_cur_temp(temperature);
         temp_model.toggle_is_heating();
 
-        ESP_LOGI(TAG.c_str(), "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
+        // ESP_LOGI(TAG.c_str(), "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
         temp_model.logger.info(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
     }
     else

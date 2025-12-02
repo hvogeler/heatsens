@@ -7,6 +7,7 @@
 #include "esp_timer_cxx.hpp"
 #include "wifi.hpp"
 #include "mqtt.hpp"
+#include "button.hpp"
 #include <time.h>
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
@@ -16,6 +17,27 @@
 // TODO: set to lightsleep between measurments. wake on interval.
 // TODO: Turn display off in light sleep. Wake on button press.
 
+static void wake_up_button_cb(void *arg, void *usr_data)
+{
+    Button *btn = static_cast<Button *>(usr_data);
+    ESP_LOGI(TAG, "++++++ WAKE UP PRESSED +++++");
+
+    button_event_t event = btn->get_event();
+    switch (event)
+    {
+    case BUTTON_SINGLE_CLICK:
+        ESP_LOGI(TAG, "       single click +++++");
+        break;
+    case BUTTON_DOUBLE_CLICK:
+        ESP_LOGI(TAG, "       double click +++++");
+        break;
+    case BUTTON_LONG_PRESS_UP:
+        ESP_LOGI(TAG, "       long click +++++");
+        break;
+    default:;
+    }
+    btn->print_event();
+}
 
 extern "C" void app_main(void)
 {
@@ -90,6 +112,10 @@ extern "C" void app_main(void)
         ui.error_screen(init_error);
         lvgl_port_unlock();
     }
+
+    Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
+    wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
+    wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
 
     while (1)
     {
