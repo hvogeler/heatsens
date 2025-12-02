@@ -1,4 +1,4 @@
-idf_component_register(SRCS 
+idf_component_register(SRCS
       "heatsens.cpp"
       "temp_model.cpp"
       "bmp280.cpp"
@@ -6,7 +6,6 @@ idf_component_register(SRCS
       "nvs.cpp"
       "wifi.cpp"
       "mqtt_logger.cpp"
-      "button.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"
       "fonts/Rubik_Regular_36.c"
@@ -22,4 +21,5 @@ idf_component_register(SRCS
       mqtt
       lvgl_weact_epaper
       json
+      button_wrapper
     )

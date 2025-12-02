@@ -17,7 +17,7 @@ public:
         gpio_config = {};
         gpio_config.active_level = active_level;
         gpio_config.gpio_num = gpio;
-        gpio_config.enable_power_save = false;
+        gpio_config.enable_power_save = true;
 
         config = {};
         esp_err_t err = iot_button_new_gpio_device(&config, &gpio_config, &handle);

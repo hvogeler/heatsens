@@ -72,6 +72,6 @@ direct_dependencies:
 - hiruna/esp-idf-aw9364
 - idf
 - lvgl/lvgl
-manifest_hash: 9afcf9e3184eb7ee35d181b598e9710cb3e989a43f9ed1ff6433e11d4cf2260c
+manifest_hash: fab0d1e860312292a8e97a7a0df5895baf2553d90d509e069707b025f293b519
 target: esp32s3
 version: 2.0.0
