@@ -6,6 +6,7 @@
 #include "../temp_model.hpp"
 #include "../mqtt.hpp"
 #include "esp_log.h"
+#include "t_display_s3.h"
 
 static const char *TAG = "ui";
 
@@ -231,5 +232,20 @@ void Ui::update_task(void *pvParam)
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
         Ui::update_ui();
+    }
+}
+
+void Ui::dim_display(LcdState to_state)
+{
+    switch (to_state)
+    {
+    case LcdState::Off:
+        lcd_set_brightness_pct_fade(10, 500);
+        lcd_state = LcdState::Off;
+        break;
+    case LcdState::On:
+        lcd_set_brightness_pct_fade(100, 500);
+        lcd_state = LcdState::On;
+        break;
     }
 }

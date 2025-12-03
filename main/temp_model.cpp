@@ -21,6 +21,8 @@ void TempModel::init()
     {
         ESP_LOGE(TAG.c_str(), "No target temp found in NVS");
     }
+
+    start_update_cur_temp_timer(1);
 }
 
 void TempModel::set_tgt_temp(double temp)

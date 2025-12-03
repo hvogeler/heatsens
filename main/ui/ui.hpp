@@ -1,6 +1,13 @@
 #pragma once
 #include "lvgl.h"
 #include <string>
+#include "esp_timer_cxx.hpp"
+
+enum class LcdState
+{
+    Off,
+    On,
+};
 
 /**
  * @brief Singleton class managing the UI using LVGL.
@@ -23,12 +30,15 @@ private:
     std::string ssid;
 
     bool is_ssid_set;
+    LcdState lcd_state;
+
+
 private:
     static void update_ui();
     static void update_task(void *pvParam);
 
     Ui()
-        : main_view_(nullptr), cur_temp_(nullptr), tgt_temp_(nullptr), lbl_heating(nullptr), ssid(""), is_ssid_set(false)
+        : main_view_(nullptr), cur_temp_(nullptr), tgt_temp_(nullptr), lbl_heating(nullptr), ssid(""), is_ssid_set(false), lcd_state(LcdState::On)
     {
     }
     ~Ui() {}
@@ -55,4 +65,14 @@ public:
     void set_cur_temp(double val);
     void set_tgt_temp(double val);
     void set_ssid(std::string ssid);
+    void dim_display(LcdState to_state);
+    void set_lcd_state(LcdState v)
+    {
+        lcd_state = v;
+    }
+
+    LcdState get_lcd_state()
+    {
+        return lcd_state;
+    }
 };

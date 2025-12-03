@@ -6,6 +6,7 @@
 #include <esp_timer.h>
 #include "cJSON.h"
 #include "mqtt_logger.hpp"
+#include "esp_timer_cxx.hpp"
 
 class TempModel
 {
@@ -17,6 +18,7 @@ private:
     bool is_heating_;
     mutable std::mutex mutex_;
     MqttLogger logger;
+    idf::esp_timer::ESPTimer update_cur_temp_timer;
 
 public:
     // Delete copy constructor and assignment operator
@@ -55,6 +57,21 @@ public:
 
     std::string toJson();
     std::string get_esp_localtime();
+    void start_update_cur_temp_timer(int32_t interval_seconds)
+    {
+        update_cur_temp_timer.start_periodic(std::chrono::seconds(interval_seconds));
+    }
+
+    void stop_update_cur_temp_timer()
+    {
+        update_cur_temp_timer.stop();
+    }
+
+    void update_cur_temp_timer_interval(int32_t new_interval_seconds)
+    {
+        stop_update_cur_temp_timer();
+        start_update_cur_temp_timer(new_interval_seconds);
+    }
 
     // Mutex methods
     void lock()
@@ -66,7 +83,7 @@ public:
 
 private:
     // Private constructor
-    TempModel() : cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false), logger(MqttLogger())
+    TempModel() : cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false), logger(MqttLogger()), update_cur_temp_timer(TempModel::update_cur_temp_cb)
     {
         // Don't initialize BMP280 here - I2C must be set up first
     }

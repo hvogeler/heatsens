@@ -9,6 +9,7 @@
 #include "mqtt.hpp"
 #include "button.hpp"
 #include <time.h>
+#include <mutex>
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
 
@@ -20,14 +21,27 @@
 static void wake_up_button_cb(void *arg, void *usr_data)
 {
     Button *btn = static_cast<Button *>(usr_data);
-    ESP_LOGI(TAG, "++++++ WAKE UP PRESSED +++++");
-
     button_event_t event = btn->get_event();
     switch (event)
     {
     case BUTTON_SINGLE_CLICK:
-        ESP_LOGI(TAG, "       single click +++++");
+    {
+        auto &ui = Ui::getInstance();
+        auto &model = TempModel::getInstance();
+        std::lock_guard<std::mutex> lock_model(model.getMutex());
+        if (ui.get_lcd_state() == LcdState::On)
+        {
+            ui.dim_display(LcdState::Off);
+            model.update_cur_temp_timer_interval(60);
+        }
+        else
+        {
+            ui.dim_display(LcdState::On);
+            model.update_cur_temp_timer_interval(1);
+        }
+
         break;
+    }
     case BUTTON_DOUBLE_CLICK:
         ESP_LOGI(TAG, "       double click +++++");
         break;
@@ -71,40 +85,38 @@ extern "C" void app_main(void)
     lcd_set_brightness_pct_fade(100, 1000);
 
     auto &wifi = Wifi::getInstance();
-
-    {
-        // std::lock_guard<mutex> lock_wifi(wifi.getMutex());
-        ret = wifi.wifi_connect();
-        if (ret != ESP_OK)
-        {
-            init_error = std::string("Wifi Error\n") + wifi.get_wifi_ssid();
-        }
-    }
-
-    ret = wifi.time_sync();
+    ret = wifi.wifi_connect();
     if (ret != ESP_OK)
     {
-        ESP_LOGW(TAG, "Could not sync time with time server");
+        init_error = std::string("Wifi Error\n") + wifi.get_wifi_ssid();
     }
 
     auto &mqtt = Mqtt::getInstance();
-    mqtt.connect();
-
-    // Initialize BMP280 sensor (it will set up I2C internally)
-    ESP_LOGI(TAG, "Initializing BMP280 sensor...");
     auto &temp_model = TempModel::getInstance();
-    temp_model.init();
-    ESP_LOGI(TAG, "Real Time is %s", temp_model.get_esp_localtime().c_str());
+    Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
 
-    idf::esp_timer::ESPTimer update_hw_info_timer(TempModel::update_cur_temp_cb);
     if (init_error.empty())
     {
+        ret = wifi.time_sync();
+        if (ret != ESP_OK)
+        {
+            ESP_LOGW(TAG, "Could not sync time with time server");
+        }
+
+        mqtt.connect();
+
+        // Initialize BMP280 sensor (it will set up I2C internally)
+        ESP_LOGI(TAG, "Initializing BMP280 sensor...");
+        temp_model.init();
+        ESP_LOGI(TAG, "Real Time is %s", temp_model.get_esp_localtime().c_str());
+
         lvgl_port_lock(0);
         ui.main_view();
         ui.set_ssid(wifi.get_wifi_ssid());
         lvgl_port_unlock();
 
-        update_hw_info_timer.start_periodic(std::chrono::seconds(CONFIG_HEATSENS_SENSOR_READ_INTERVAL));
+        wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
+        wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
     }
     else
     {
@@ -113,13 +125,11 @@ extern "C" void app_main(void)
         lvgl_port_unlock();
     }
 
-    Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
-    wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
-    wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
-
+    bool is_first_iter = true;
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(5000));
+
         if (init_error.empty())
         {
             std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
