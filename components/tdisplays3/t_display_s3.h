@@ -78,7 +78,7 @@ extern "C"
 #define LVGL_BUFFER_SIZE (((LCD_H_RES * LCD_V_RES) / 10) + LCD_H_RES)
 
 // LVGL Timer options
-#define LVGL_TICK_PERIOD_MS 5
+#define LVGL_TICK_PERIOD_MS 5 // original: 5
 #define LVGL_MAX_SLEEP_MS (LVGL_TICK_PERIOD_MS * 2) // this affects how fast the screen is refreshed
 #define LVGL_TASK_STACK_SIZE (8 * 1024)
 #define LVGL_TASK_PRIORITY 2

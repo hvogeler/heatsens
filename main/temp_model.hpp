@@ -67,11 +67,7 @@ public:
         update_cur_temp_timer.stop();
     }
 
-    void update_cur_temp_timer_interval(int32_t new_interval_seconds)
-    {
-        stop_update_cur_temp_timer();
-        start_update_cur_temp_timer(new_interval_seconds);
-    }
+    void update_cur_temp_timer_interval(int32_t new_interval_seconds);
 
     // Mutex methods
     void lock()

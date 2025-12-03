@@ -132,3 +132,10 @@ void TempModel::update_cur_temp_cb()
         ESP_LOGE(TAG.c_str(), "BMP280 sensor not initialized");
     }
 }
+
+void TempModel::update_cur_temp_timer_interval(int32_t new_interval_seconds)
+{
+    ESP_LOGI(TAG.c_str(), "Setting update_cur_temp_timer interval to %d secs", new_interval_seconds);
+    stop_update_cur_temp_timer();
+    start_update_cur_temp_timer(new_interval_seconds);
+}

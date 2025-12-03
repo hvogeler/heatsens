@@ -31,14 +31,15 @@ private:
 
     bool is_ssid_set;
     LcdState lcd_state;
-
+    idf::esp_timer::ESPTimer dim_on_timer;
 
 private:
     static void update_ui();
     static void update_task(void *pvParam);
-
+    static void dim_on_timer_cb();
     Ui()
-        : main_view_(nullptr), cur_temp_(nullptr), tgt_temp_(nullptr), lbl_heating(nullptr), ssid(""), is_ssid_set(false), lcd_state(LcdState::On)
+        : main_view_(nullptr), cur_temp_(nullptr), tgt_temp_(nullptr), lbl_heating(nullptr), ssid(""), is_ssid_set(false),
+          lcd_state(LcdState::On), dim_on_timer(Ui::dim_on_timer_cb)
     {
     }
     ~Ui() {}
@@ -66,6 +67,7 @@ public:
     void set_tgt_temp(double val);
     void set_ssid(std::string ssid);
     void dim_display(LcdState to_state);
+    void start_dim_on_timer(std::chrono::seconds seconds);
     void set_lcd_state(LcdState v)
     {
         lcd_state = v;

@@ -249,3 +249,16 @@ void Ui::dim_display(LcdState to_state)
         break;
     }
 }
+
+void Ui::dim_on_timer_cb()
+{
+    auto &ui = Ui::getInstance();
+    ui.dim_display(LcdState::Off);
+    auto &model = TempModel::getInstance();
+    model.update_cur_temp_timer_interval(60);
+}
+
+void Ui::start_dim_on_timer(std::chrono::seconds seconds)
+{
+    dim_on_timer.start(seconds);
+}
