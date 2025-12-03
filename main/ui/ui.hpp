@@ -67,7 +67,7 @@ public:
     void set_tgt_temp(double val);
     void set_ssid(std::string ssid);
     void dim_display(LcdState to_state);
-    void start_dim_on_timer(std::chrono::seconds seconds);
+    void start_dim_on_timer(int32_t);
     void set_lcd_state(LcdState v)
     {
         lcd_state = v;

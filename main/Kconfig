@@ -29,11 +29,29 @@ menu "HEATSENS"
         help
             Log topic. device-id and severity added dynamically
 
-    config HEATSENS_SENSOR_READ_INTERVAL
-        int "Sensor read interval in seconds"
+    config HEATSENS_TEMP_READ_INTERVAL_SHORT
+        int "Short Sensor read interval in seconds"
+        default 1
+        help
+            Short Sensor read interval in seconds
+
+    config HEATSENS_TEMP_READ_INTERVAL_LONG
+        int "Long Sensor read interval in seconds"
         default 300
         help
-            Sensor read interval in seconds
+            Long Sensor read interval in seconds
+
+    config HEATSENS_LCD_ON_INTERVAL_SHORT
+        int "Short Lcd on interval in seconds"
+        default 5
+        help
+            Short lcd on  interval in seconds
+
+    config HEATSENS_LCD_ON_INTERVAL_LONG
+        int "Long Lcd on interval in seconds"
+        default 20
+        help
+            Long lcd on  interval in seconds
 
     config HEATSENS_HISTERESIS
         int "Histeresis * 100. 0.5 degrees is 0.5 * 100 = 50"

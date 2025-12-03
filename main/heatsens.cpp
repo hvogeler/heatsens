@@ -15,9 +15,8 @@
 
 #define TAG "heatsens"
 
-// TODO: set to lightsleep between measurments. wake on interval.
-// TODO: Turn display off in light sleep. Wake on button press.
-static void button_click_common(std::chrono::seconds lcd_on_seconds)
+// TODO: Configure the publish curtemp interval
+static void button_click_common(uint64_t lcd_on_seconds)
 {
     auto &ui = Ui::getInstance();
     auto &model = TempModel::getInstance();
@@ -25,12 +24,12 @@ static void button_click_common(std::chrono::seconds lcd_on_seconds)
     if (ui.get_lcd_state() == LcdState::On)
     {
         ui.dim_display(LcdState::Off);
-        model.update_cur_temp_timer_interval(60);
+        model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_LONG);
     }
     else
     {
         ui.dim_display(LcdState::On);
-        model.update_cur_temp_timer_interval(1);
+        model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_SHORT);
         ui.start_dim_on_timer(lcd_on_seconds);
     }
 }
@@ -42,13 +41,11 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     switch (event)
     {
     case BUTTON_SINGLE_CLICK:
-        button_click_common(static_cast<std::chrono::seconds>(5));
+        button_click_common(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
         break;
     case BUTTON_DOUBLE_CLICK:
-        ESP_LOGI(TAG, "       double click +++++");
-        break;
     case BUTTON_LONG_PRESS_UP:
-        button_click_common(static_cast<std::chrono::seconds>(20));
+        button_click_common(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         break;
     default:;
     }
@@ -116,7 +113,7 @@ extern "C" void app_main(void)
         ui.main_view();
         ui.set_ssid(wifi.get_wifi_ssid());
         lvgl_port_unlock();
-        ui.start_dim_on_timer(static_cast<std::chrono::seconds>(10));
+        ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
         wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
     }

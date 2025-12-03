@@ -255,10 +255,19 @@ void Ui::dim_on_timer_cb()
     auto &ui = Ui::getInstance();
     ui.dim_display(LcdState::Off);
     auto &model = TempModel::getInstance();
-    model.update_cur_temp_timer_interval(60);
+    model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_LONG);
 }
 
-void Ui::start_dim_on_timer(std::chrono::seconds seconds)
+void Ui::start_dim_on_timer(int32_t seconds)
 {
-    dim_on_timer.start(seconds);
+    try
+    {
+        dim_on_timer.stop();
+    }
+    catch (...)
+    {
+        // Timer wasn't running, that's fine
+    }
+    ESP_LOGI(TAG, "Setting Lcd On Timer to %d seconds", seconds);
+    dim_on_timer.start(std::chrono::seconds(seconds));
 }
