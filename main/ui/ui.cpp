@@ -96,6 +96,14 @@ void Ui::main_view()
 {
     main_view_ = lv_screen_active();
     lv_obj_clean(main_view_);
+
+    // Reset all object pointers since lv_obj_clean deleted them
+    lbl_heating = nullptr;
+    lbl_heating_requested = nullptr;
+    cur_temp_ = nullptr;
+    tgt_temp_ = nullptr;
+    label_version = nullptr;
+
     lv_obj_set_style_bg_color(main_view_, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_pad_all(main_view_, 5, LV_PART_MAIN);
 

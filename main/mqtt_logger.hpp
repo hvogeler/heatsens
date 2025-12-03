@@ -83,6 +83,7 @@ public:
         auto &mqtt = Mqtt::getInstance();
 
         mqtt.publish_log(full_topic, std::string(json_str));
+        free(json_str); // Free the memory allocated by cJSON_Print
         cJSON_Delete(json);
     }
 
