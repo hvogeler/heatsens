@@ -2,14 +2,13 @@
 #include "iot_button.h"
 #include "esp_log.h"
 
-static const char *TAG = "Button";
-
 class Button
 {
 private:
     button_handle_t handle;
     button_gpio_config_t gpio_config;
     button_config_t config;
+    static constexpr char *TAG = "Button";
 
 public:
     Button(int32_t gpio, int32_t active_level, button_event_t event_type, button_cb_t callback)

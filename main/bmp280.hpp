@@ -5,10 +5,6 @@
 #include "esp_log.h"
 #include "mqtt_logger.hpp"
 
-#define I2C_SDA_PIN GPIO_NUM_43
-#define I2C_SCL_PIN GPIO_NUM_44
-#define I2C_MASTER_FREQ_HZ 100000 // 100kHz - reduced for stability
-
 #define BMP280_REG_ID 0xD0
 #define BMP280_REG_RESET 0xE0
 #define BMP280_REG_STATUS 0xF3
@@ -47,13 +43,14 @@ struct bmp280_calib_data
 
 class Bmp280
 {
-    i2c_master_bus_handle_t i2c_bus_handle;
     i2c_master_dev_handle_t dev_handle;
-    bmp280_calib_data calib_data;
     uint8_t i2c_dev_addr;
+    bmp280_calib_data calib_data;
 
     mutable std::mutex mutex_;
     MqttLogger logger;
+
+    static constexpr char *TAG = "Bmp280";
 
 public:
     bool is_initialized = false;
@@ -71,14 +68,13 @@ public:
     }
     std::mutex &getMutex() { return mutex_; }
 
-    void init();
+    esp_err_t init();
     esp_err_t read_raw(int32_t *raw_temp, int32_t *raw_press);
     void compensate_temp_press(int32_t raw_temp, int32_t raw_press,
                                double *temperature, double *pressure);
 
 private:
-    Bmp280() : i2c_bus_handle(nullptr),
-               dev_handle(nullptr), i2c_dev_addr(0), logger(MqttLogger())
+    Bmp280() : dev_handle(nullptr)
     {
         // Don't initialize BMP280 here - I2C must be set up first
     }

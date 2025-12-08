@@ -7,7 +7,9 @@
 #include "esp_timer_cxx.hpp"
 #include "wifi.hpp"
 #include "mqtt.hpp"
+#include "i2c.hpp"
 #include "button.hpp"
+#include "mpu6050.hpp"
 #include <time.h>
 #include <mutex>
 #include <sys/time.h>
@@ -54,6 +56,8 @@ static void wake_up_button_cb(void *arg, void *usr_data)
 
 extern "C" void app_main(void)
 {
+    I2c::getInstance().init();
+
     // Initialize NVS. It will be used in various parts of the firmware
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -66,6 +70,7 @@ extern "C" void app_main(void)
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
     esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
+    esp_log_level_set("Mpu6050", ESP_LOG_DEBUG);
     std::string init_error = "";
 
     // LVGL display handle
@@ -124,10 +129,43 @@ extern "C" void app_main(void)
         lvgl_port_unlock();
     }
 
+    auto &motion_sensor = Mpu6050::getInstance();
+    esp_err_t err = motion_sensor.init();
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Initializing the motion sensor failed");
+    }
+    else
+    {
+        ESP_LOGI(TAG, "MPU6050 initialized successfully");
+
+        // Test: Read initial sensor data to verify it's working
+        mpu6050_data test_data;
+        err = motion_sensor.read_scaled(&test_data);
+        if (err == ESP_OK)
+        {
+            ESP_LOGI(TAG, "Initial MPU6050 reading - Accel: %.2f, %.2f, %.2f g | Temp: %.1f°C",
+                     test_data.accel_x, test_data.accel_y, test_data.accel_z, test_data.temp);
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to read initial MPU6050 data");
+        }
+
+        // Setup motion detection with higher threshold for rotation detection
+        // For 30° rotation, we expect ~0.5g change, so use 0.2g (100mg) threshold
+        // threshold=100 means 200mg, duration=50ms to debounce
+        err = motion_sensor.setup_motion_detection(50, 50);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to setup motion detection");
+        }
+    }
+
     bool is_first_iter = true;
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Check every 1 second
 
         if (init_error.empty())
         {
@@ -135,6 +173,31 @@ extern "C" void app_main(void)
             std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
             mqtt.publish(temp_model.toJson());
         }
+
+        // Use software-based rotation detection
+        mpu6050_data data;
+        err = motion_sensor.read_scaled(&data);
+        if (err == ESP_OK)
+        {
+            // For gentle rotation detection, use lower threshold
+            // 0.08g ≈ 5° rotation, 0.15g ≈ 10° rotation
+            bool rotated = motion_sensor.is_rotated(&data, 0.08f); // Very sensitive
+            if (rotated)
+            {
+                ESP_LOGW(TAG, "Device rotated! Turning on LCD...");
+                ESP_LOGI(TAG, "Accel: %.3f, %.3f, %.3f g",
+                         data.accel_x, data.accel_y, data.accel_z);
+
+                // Turn on LCD when rotation detected
+                button_click_common(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
+            }
+            else
+            {
+                ESP_LOGD(TAG, "Stationary. Accel: %.3f, %.3f, %.3f g",
+                         data.accel_x, data.accel_y, data.accel_z);
+            }
+        }
+
         // heap_trace_dump();
         ESP_LOGD(TAG, "Free heap: %lu bytes", esp_get_free_heap_size());
         // stack size dump
