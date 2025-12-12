@@ -26,7 +26,7 @@ private:
     lv_obj_t *tgt_temp_;
     lv_obj_t *lbl_heating;
     lv_obj_t *lbl_heating_requested;
-    lv_obj_t *label_version;
+    lv_obj_t *label_meta;
     std::string ssid;
 
     bool is_ssid_set;
@@ -65,7 +65,7 @@ public:
     void show_heating_requested(bool);
     void set_cur_temp(double val);
     void set_tgt_temp(double val);
-    void set_ssid(std::string ssid);
+    void set_meta(std::string, int);
     void dim_display(LcdState to_state);
     void start_dim_on_timer(int32_t);
     void set_lcd_state(LcdState v)

@@ -116,7 +116,7 @@ extern "C" void app_main(void)
 
         lvgl_port_lock(0);
         ui.main_view();
-        ui.set_ssid(wifi.get_wifi_ssid());
+        ui.set_meta(temp_model.get_device_name(), temp_model.get_heat_actuator());
         lvgl_port_unlock();
         ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);

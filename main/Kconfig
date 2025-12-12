@@ -1,9 +1,9 @@
 menu "HEATSENS"
     config HEATSENS_DEVICE_ID
         string "Device Id"
-        default "Bad"
+        default "9999"
         help
-            This device id will be part of the mqtt topics
+            This device id 
 
     config HEATSENS_CURRENT_TEMP_TOPIC
         string "Publish Temperature Topic"
@@ -16,6 +16,12 @@ menu "HEATSENS"
         default "heatsens/tgt_temp/"
         help
             Topic to read target temperature
+
+    config HEATSENS_CONFIG_TOPIC
+        string "Configuration Topic"
+        default "heatsens/config/"
+        help
+            Configuration Topic
 
     config HEATSENS_CTRL_INFO_TOPIC
         string "Subscribe controller info Topic"

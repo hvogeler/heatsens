@@ -6,20 +6,35 @@
 #include "bmp280.hpp"
 #include "nvs.hpp"
 
-static std::string TAG = "temp_model";
+static constexpr char *TAG = "temp_model";
 
 void TempModel::init()
 {
     auto &bmp280 = Bmp280::getInstance();
     bmp280.init();
 
-    Nvs nvs;
-    nvs.open_namespace("heatsens");
-    esp_err_t ret = nvs.read("tgt_temp", tgt_temp_);
+    Nvs nvs_heatsens;
+    nvs_heatsens.open_namespace("heatsens");
+    esp_err_t ret = nvs_heatsens.read("tgt_temp", tgt_temp_);
     tgt_temp_ /= 10.0;
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG.c_str(), "No target temp found in NVS");
+        ESP_LOGE(TAG, "No target temp found in NVS");
+    }
+
+    Nvs nvs_config;
+    nvs_config.open_namespace("meta");
+    ret = nvs_config.read("device_name", device_name_);
+    if (ret != ESP_OK)
+    {
+        device_name_ = "undefined";
+        ESP_LOGE(TAG, "No device name found in NVS");
+    }
+
+    ret = nvs_config.read("heat_actuator", heat_actuator_);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "No heat actuator id found in NVS");
     }
 
     start_update_cur_temp_timer(CONFIG_HEATSENS_TEMP_READ_INTERVAL_SHORT);
@@ -34,7 +49,26 @@ void TempModel::set_tgt_temp(double temp)
     esp_err_t ret = nvs.write("tgt_temp", temp * 10.0);
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG.c_str(), "Failed to write target temp to NVS");
+        ESP_LOGE(TAG, "Failed to write target temp to NVS");
+    }
+}
+
+void TempModel::set_device_meta(std::string name, int heat_actuator)
+{
+    device_name_ = name;
+    heat_actuator_ = heat_actuator;
+
+    Nvs nvs;
+    nvs.open_namespace("meta");
+    esp_err_t ret = nvs.write("device_name", name);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to write target temp to NVS");
+    }
+    ret = nvs.write("heat_actuator", heat_actuator);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to write target temp to NVS");
     }
 }
 
@@ -46,7 +80,7 @@ void TempModel::toggle_is_heating()
     bool should_turn_on_heater = temp_diff > histeresis && !is_heating_requested_;
     if (should_turn_on_heater)
     {
-        ESP_LOGI(TAG.c_str(), "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        ESP_LOGI(TAG, "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         logger.info(TAG, "Heating ON, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         is_heating_requested_ = true;
     }
@@ -54,7 +88,7 @@ void TempModel::toggle_is_heating()
     bool should_turn_off_heater = -temp_diff > histeresis && is_heating_requested_;
     if (should_turn_off_heater)
     {
-        ESP_LOGI(TAG.c_str(), "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
+        ESP_LOGI(TAG, "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         logger.info(TAG, "Heating OFF, tgt_temp=%.1f, cur_temp=%.1f, histeresis=%.1f", tgt_temp_, cur_temp_, histeresis);
         is_heating_requested_ = false;
     }
@@ -89,10 +123,12 @@ std::string TempModel::get_esp_localtime()
 std::string TempModel::toJson()
 {
     cJSON *doc = cJSON_CreateObject();
+    cJSON_AddStringToObject(doc, "ts", get_esp_localtime().c_str());
     cJSON_AddNumberToObject(doc, "cur_temp", cur_temp_);
     cJSON_AddNumberToObject(doc, "tgt_temp", tgt_temp_);
     cJSON_AddBoolToObject(doc, "is_heating", get_is_heating_requested());
-    cJSON_AddStringToObject(doc, "ts", get_esp_localtime().c_str());
+    cJSON_AddStringToObject(doc, "device_name", device_name_.c_str());
+    cJSON_AddNumberToObject(doc, "heat_actuator", heat_actuator_);
 
     char *json_str = cJSON_Print(doc);
     std::string ret(json_str);
@@ -113,7 +149,7 @@ void TempModel::update_cur_temp_cb()
 
         if (bmp280.read_raw(&raw_temp, &raw_press) != ESP_OK)
         {
-            ESP_LOGE(TAG.c_str(), "Failed to read raw sensor data");
+            ESP_LOGE(TAG, "Failed to read raw sensor data");
             return;
         }
 
@@ -124,18 +160,18 @@ void TempModel::update_cur_temp_cb()
         temp_model.set_cur_temp(temperature);
         temp_model.toggle_is_heating();
 
-        // ESP_LOGI(TAG.c_str(), "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
+        // ESP_LOGI(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
         temp_model.logger.info(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
     }
     else
     {
-        ESP_LOGE(TAG.c_str(), "BMP280 sensor not initialized");
+        ESP_LOGE(TAG, "BMP280 sensor not initialized");
     }
 }
 
 void TempModel::update_cur_temp_timer_interval(int32_t new_interval_seconds)
 {
-    ESP_LOGI(TAG.c_str(), "Setting update_cur_temp_timer interval to %d secs", new_interval_seconds);
+    ESP_LOGI(TAG, "Setting update_cur_temp_timer interval to %d secs", new_interval_seconds);
     stop_update_cur_temp_timer();
     start_update_cur_temp_timer(new_interval_seconds);
 }

@@ -115,3 +115,17 @@ On my MAC it is `/dev/cu.usbmodem1101`.
 
 This flashes the credentials to the devices NVS where they will stay until the flash is cleared.
 Firmware updates will not clear the credentials.
+
+# Configure device name and heat actuator
+
+After the heat sensor is started it must be configure via mqtt topic `heatsens/config/<device_id>`.
+This message is json like:
+
+```
+{
+  "device_name": "Flur",
+  "heat_actuator" : 3
+}
+```
+
+It configures device `<device_id>` to have the name _Flur_ and it should address the heat actuator 3 in the floor heating controller.

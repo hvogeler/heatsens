@@ -18,6 +18,7 @@ private:
     std::string current_temp_topic;
     std::string target_temp_topic;
     std::string ctrl_info_topic;
+    std::string config_topic;
     int msg_id;
 
     esp_mqtt_connect_return_code_t connect_return_code;
@@ -54,6 +55,11 @@ public:
     std::string get_ctrl_info_topic()
     {
         return ctrl_info_topic;
+    }
+
+    std::string get_config_topic()
+    {
+        return config_topic;
     }
 
     bool get_is_mqtt_connected()
@@ -100,6 +106,8 @@ private:
         target_temp_topic += CONFIG_HEATSENS_DEVICE_ID;
         ctrl_info_topic = CONFIG_HEATSENS_CTRL_INFO_TOPIC;
         ctrl_info_topic += CONFIG_HEATSENS_DEVICE_ID;
+        config_topic = CONFIG_HEATSENS_CONFIG_TOPIC;
+        config_topic += CONFIG_HEATSENS_DEVICE_ID;
 
         // Initialize cnct_prop
         cnct_prop = {}; // Zero-initialize first

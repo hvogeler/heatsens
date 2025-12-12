@@ -12,6 +12,9 @@ class TempModel
 {
 private:
     // Member variables
+    std::string device_id_;
+    std::string device_name_;
+    int heat_actuator_;
     double cur_temp_;
     double tgt_temp_;
     bool is_heating_requested_;
@@ -42,6 +45,8 @@ public:
     // Getters
     double getCurTemp() const { return cur_temp_; }
     double getTgtTemp() const { return tgt_temp_; }
+    std::string get_device_name() { return device_name_; }
+    int get_heat_actuator() { return heat_actuator_; }
     bool get_is_heating()
     {
         return is_heating_;
@@ -49,6 +54,7 @@ public:
 
     // Setters
     void set_cur_temp(double temp) { cur_temp_ = temp; }
+    void set_device_meta(std::string name, int heat_actuator);
     void set_tgt_temp(double temp);
     void set_is_heating(bool v)
     {
@@ -79,7 +85,7 @@ public:
 
 private:
     // Private constructor
-    TempModel() : cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false), logger(MqttLogger()), update_cur_temp_timer(TempModel::update_cur_temp_cb)
+    TempModel() : device_id_(CONFIG_HEATSENS_DEVICE_ID), device_name_("undefined"), cur_temp_(0.0f), tgt_temp_(0.0f), is_heating_requested_(false), is_heating_(false), logger(MqttLogger()), update_cur_temp_timer(TempModel::update_cur_temp_cb)
     {
         // Don't initialize BMP280 here - I2C must be set up first
     }

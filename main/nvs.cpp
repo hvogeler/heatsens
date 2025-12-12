@@ -18,6 +18,11 @@ esp_err_t Nvs::write(std::string key, double v)
     return nvs_set_i32(handle_, key.c_str(), v);
 }
 
+esp_err_t Nvs::write(std::string key, std::string v)
+{
+    return nvs_set_str(handle_, key.c_str(), v.c_str());
+}
+
 esp_err_t Nvs::read(std::string key, double &v)
 {
     int32_t value;
@@ -30,6 +35,22 @@ esp_err_t Nvs::read(std::string key, double &v)
     else
     {
         v = 19.0;
+        return ret;
+    }
+}
+
+esp_err_t Nvs::read(std::string key, int &v)
+{
+    int32_t value;
+    esp_err_t ret = nvs_get_i32(handle_, key.c_str(), &value);
+    if (ret == ESP_OK)
+    {
+        v = value;
+        return ret;
+    }
+    else
+    {
+        v = 9999;
         return ret;
     }
 }

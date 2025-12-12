@@ -103,7 +103,7 @@ void Ui::main_view()
     lbl_heating_requested = nullptr;
     cur_temp_ = nullptr;
     tgt_temp_ = nullptr;
-    label_version = nullptr;
+    label_meta = nullptr;
 
     lv_obj_set_style_bg_color(main_view_, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_pad_all(main_view_, 5, LV_PART_MAIN);
@@ -157,27 +157,30 @@ void Ui::main_view()
 
     lv_obj_align_to(tgt_temp_, lbl_tgt_temp, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 3);
 
-    // Version label
-    label_version = lv_label_create(main_view_);
-    lv_label_set_text_fmt(label_version, "v%s  %s",
+    label_meta = lv_label_create(main_view_);
+    lv_label_set_text_fmt(label_meta, "v%s %s-%s-%d",
                           CONFIG_APP_PROJECT_VER,
-                          "ssid");
-    lv_obj_set_style_text_font(label_version, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label_version, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_PART_MAIN);
-    lv_obj_align(label_version, LV_ALIGN_BOTTOM_LEFT, 0, -8);
+                          CONFIG_HEATSENS_DEVICE_ID,
+                          "room",
+                          0);
+    lv_obj_set_style_text_font(label_meta, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label_meta, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_PART_MAIN);
+    lv_obj_align(label_meta, LV_ALIGN_BOTTOM_LEFT, 0, -8);
 
     xTaskCreatePinnedToCore(update_task, "update_task", 4096 * 2, NULL, 0, NULL, 1);
 }
 
-void Ui::set_ssid(std::string ssid)
+void Ui::set_meta(std::string device_name, int heat_actuator)
 {
-    if (!is_ssid_set && !ssid.empty())
-    {
-        lv_label_set_text_fmt(label_version, "v%s  %s",
-                              CONFIG_APP_PROJECT_VER,
-                              ssid.c_str());
-        is_ssid_set = true;
-    }
+    // if (!is_ssid_set && !ssid.empty())
+    // {
+    lv_label_set_text_fmt(label_meta, "v%s %s-%s-%d",
+                          CONFIG_APP_PROJECT_VER,
+                          CONFIG_HEATSENS_DEVICE_ID,
+                          device_name.c_str(),
+                          heat_actuator);
+    is_ssid_set = true;
+    // }
 }
 
 void Ui::update_ui()
@@ -204,6 +207,7 @@ void Ui::update_ui()
     if (lvgl_port_lock(0))
     {
         auto &ui = Ui::getInstance();
+        ui.set_meta(temp_model.get_device_name(), temp_model.get_heat_actuator());
         ui.set_cur_temp(cur_temp);
         ui.set_tgt_temp(tgt_temp);
         ui.show_heating(temp_model.get_is_heating());

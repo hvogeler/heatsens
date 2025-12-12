@@ -25,6 +25,8 @@ public:
 
     esp_err_t open_namespace(std::string);
     esp_err_t write(std::string, double tgt_temp);
+    esp_err_t write(std::string key, std::string v);
     esp_err_t read(std::string, double &);
+    esp_err_t read(std::string, int &);
     esp_err_t read(std::string, std::string &);
 };
