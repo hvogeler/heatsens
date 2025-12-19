@@ -125,11 +125,15 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
             std::string tgt_temp_str(static_cast<const char *>(event->data), len);
             try
             {
-                double tgt_temp = std::stod(tgt_temp_str);
+                cJSON *json = cJSON_Parse(tgt_temp_str.c_str());
+                cJSON *tgt_temp_json = cJSON_GetObjectItem(json, "tgt_temp");
+
+                double tgt_temp = cJSON_GetNumberValue(tgt_temp_json); // std::stod(tgt_temp_str);
                 ESP_LOGI(TAG, "Received Target Temp: %.1f from %s", tgt_temp, topic.c_str());
                 auto &model = TempModel::getInstance();
                 std::lock_guard<std::mutex> lock_model(model.getMutex());
                 model.set_tgt_temp(tgt_temp);
+                cJSON_Delete(json);
             }
             catch (const std::exception &e)
             {
@@ -151,6 +155,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
                 auto &model = TempModel::getInstance();
                 std::lock_guard<std::mutex> lock_model(model.getMutex());
                 model.set_device_meta(cJSON_GetStringValue(device_name_json), cJSON_GetNumberValue(heat_actuator));
+                cJSON_Delete(json);
             }
             catch (const std::exception &e)
             {

@@ -9,6 +9,12 @@
 #include "esp_netif.h"
 #include "mqtt_client.h"
 
+/**
+ * ctrl_info_topic payload example:
+ * {
+ *    "is_heating": <0 or 1>
+ * }
+ */
 class Mqtt
 {
 private:
