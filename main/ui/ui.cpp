@@ -200,18 +200,28 @@ void Ui::update_ui()
     }
 
     auto &temp_model = TempModel::getInstance();
-    std::lock_guard<std::mutex> lock_model(temp_model.getMutex());
-    auto cur_temp = temp_model.getCurTemp();
-    auto tgt_temp = temp_model.getTgtTemp();
+    double cur_temp, tgt_temp;
+    std::string device_name;
+    int heat_actuator;
+    bool is_heating, is_heating_requested;
+    {
+        std::lock_guard<std::mutex> lock_model(temp_model.getMutex());
+        cur_temp = temp_model.getCurTemp();
+        tgt_temp = temp_model.getTgtTemp();
+        device_name = temp_model.get_device_name();
+        heat_actuator = temp_model.get_heat_actuator();
+        is_heating = temp_model.get_is_heating();
+        is_heating_requested = temp_model.get_is_heating_requested();
+    }
 
     if (lvgl_port_lock(0))
     {
         auto &ui = Ui::getInstance();
-        ui.set_meta(temp_model.get_device_name(), temp_model.get_heat_actuator());
+        ui.set_meta(device_name, heat_actuator);
         ui.set_cur_temp(cur_temp);
         ui.set_tgt_temp(tgt_temp);
-        ui.show_heating(temp_model.get_is_heating());
-        ui.show_heating_requested(temp_model.get_is_heating_requested());
+        ui.show_heating(is_heating);
+        ui.show_heating_requested(is_heating_requested);
         lvgl_port_unlock();
     }
 }

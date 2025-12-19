@@ -156,12 +156,16 @@ void TempModel::update_cur_temp_cb()
         bmp280.compensate_temp_press(raw_temp, raw_press, &temperature, &pressure);
 
         auto &temp_model = TempModel::getInstance();
-        std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
-        temp_model.set_cur_temp(temperature);
-        temp_model.toggle_is_heating();
+        double tgt_temp;
+        {
+            std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
+            temp_model.set_cur_temp(temperature);
+            temp_model.toggle_is_heating();
+            tgt_temp = temp_model.getTgtTemp();
+        }
 
-        // ESP_LOGI(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
-        temp_model.logger.info(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, temp_model.getTgtTemp(), pressure);
+        // ESP_LOGI(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, tgt_temp, pressure);
+        temp_model.logger.info(TAG, "Current Temp: %.2f°C, Target Temp: %.1f, Pressure: %.2f Pa", temperature, tgt_temp, pressure);
     }
     else
     {

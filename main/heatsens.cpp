@@ -18,11 +18,12 @@
 #define TAG "heatsens"
 
 // TODO: Configure the publish curtemp interval
+// TODO: check all lock guards for possible deadlocks
 static void button_click_common(uint64_t lcd_on_seconds)
 {
     auto &ui = Ui::getInstance();
     auto &model = TempModel::getInstance();
-    std::lock_guard<std::mutex> lock_model(model.getMutex());
+
     if (ui.get_lcd_state() == LcdState::On)
     {
         ui.dim_display(LcdState::Off);
@@ -169,9 +170,15 @@ extern "C" void app_main(void)
 
         if (init_error.empty())
         {
-            std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
-            std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
-            mqtt.publish(temp_model.toJson());
+            std::string json_data;
+            {
+                std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
+                json_data = temp_model.toJson();
+            }
+            {
+                std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
+                mqtt.publish(json_data);
+            }
         }
 
         // Use software-based rotation detection

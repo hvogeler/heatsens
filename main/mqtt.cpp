@@ -174,9 +174,11 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
             if (cJSON_IsNumber(is_heating_item))
             {
                 int is_heating = is_heating_item->valueint;
-                auto &model = TempModel::getInstance();
-                std::lock_guard<std::mutex> lock_model(model.getMutex());
-                model.set_is_heating(is_heating > 0);
+                {
+                    auto &model = TempModel::getInstance();
+                    std::lock_guard<std::mutex> lock_model(model.getMutex());
+                    model.set_is_heating(is_heating > 0);
+                }
                 ESP_LOGI(TAG, "Floor is heating: %d", is_heating);
             }
             else
