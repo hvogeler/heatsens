@@ -83,8 +83,8 @@ static void check_motion_cb()
         bool rotated = motion_sensor.is_rotated(&data, 0.08f); // Very sensitive
         if (rotated)
         {
-            ESP_LOGW(local_tag, "Device rotated! Turning on LCD...");
-            ESP_LOGI(local_tag, "Accel: %.3f, %.3f, %.3f g",
+            ESP_LOGI(local_tag, "Device rotated! Turning on LCD...");
+            ESP_LOGD(local_tag, "Accel: %.3f, %.3f, %.3f g",
                      data.accel_x, data.accel_y, data.accel_z);
 
             // Turn on LCD when rotation detected
@@ -93,11 +93,6 @@ static void check_motion_cb()
             std::lock_guard<std::mutex> lock_ui(ui.getMutex());
             ui.dim_display(LcdState::On);
             ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
-        }
-        else
-        {
-            ESP_LOGD(local_tag, "Stationary. Accel: %.3f, %.3f, %.3f g",
-                     data.accel_x, data.accel_y, data.accel_z);
         }
     }
 }
