@@ -24,16 +24,29 @@ static void button_click_common(uint64_t lcd_on_seconds)
     auto &ui = Ui::getInstance();
     auto &model = TempModel::getInstance();
 
-    if (ui.get_lcd_state() == LcdState::On)
+    bool should_turn_off = false;
     {
-        ui.dim_display(LcdState::Off);
+        std::lock_guard<std::mutex> lock_ui(ui.getMutex());
+        if (ui.get_lcd_state() == LcdState::On)
+        {
+            ui.dim_display(LcdState::Off);
+            should_turn_off = true;
+        }
+        else
+        {
+            ui.dim_display(LcdState::On);
+            ui.start_dim_on_timer(lcd_on_seconds);
+        }
+    }
+
+    std::lock_guard<std::mutex> lock_model(model.getMutex());
+    if (should_turn_off)
+    {
         model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_LONG);
     }
     else
     {
-        ui.dim_display(LcdState::On);
         model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_SHORT);
-        ui.start_dim_on_timer(lcd_on_seconds);
     }
 }
 
@@ -53,6 +66,40 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     default:;
     }
     btn->print_event();
+}
+
+static void check_motion_cb()
+{
+    static char *local_tag = "check_motion_cb";
+    auto &motion_sensor = Mpu6050::getInstance();
+
+    // Use software-based rotation detection
+    mpu6050_data data;
+    esp_err_t err = motion_sensor.read_scaled(&data);
+    if (err == ESP_OK)
+    {
+        // For gentle rotation detection, use lower threshold
+        // 0.08g ≈ 5° rotation, 0.15g ≈ 10° rotation
+        bool rotated = motion_sensor.is_rotated(&data, 0.08f); // Very sensitive
+        if (rotated)
+        {
+            ESP_LOGW(local_tag, "Device rotated! Turning on LCD...");
+            ESP_LOGI(local_tag, "Accel: %.3f, %.3f, %.3f g",
+                     data.accel_x, data.accel_y, data.accel_z);
+
+            // Turn on LCD when rotation detected
+            // button_click_common(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
+            auto &ui = Ui::getInstance();
+            std::lock_guard<std::mutex> lock_ui(ui.getMutex());
+            ui.dim_display(LcdState::On);
+            ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
+        }
+        else
+        {
+            ESP_LOGD(local_tag, "Stationary. Accel: %.3f, %.3f, %.3f g",
+                     data.accel_x, data.accel_y, data.accel_z);
+        }
+    }
 }
 
 extern "C" void app_main(void)
@@ -131,6 +178,7 @@ extern "C" void app_main(void)
     }
 
     auto &motion_sensor = Mpu6050::getInstance();
+    idf::esp_timer::ESPTimer check_motion_timer(check_motion_cb, "check_motion_timer");
     esp_err_t err = motion_sensor.init();
     if (err != ESP_OK)
     {
@@ -161,12 +209,13 @@ extern "C" void app_main(void)
         {
             ESP_LOGE(TAG, "Failed to setup motion detection");
         }
+        check_motion_timer.start_periodic(std::chrono::milliseconds(300));
     }
 
     bool is_first_iter = true;
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Check every 1 second
+        vTaskDelay(pdMS_TO_TICKS(10000)); // Check every 1 second
 
         if (init_error.empty())
         {
@@ -178,30 +227,6 @@ extern "C" void app_main(void)
             {
                 std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
                 mqtt.publish(json_data);
-            }
-        }
-
-        // Use software-based rotation detection
-        mpu6050_data data;
-        err = motion_sensor.read_scaled(&data);
-        if (err == ESP_OK)
-        {
-            // For gentle rotation detection, use lower threshold
-            // 0.08g ≈ 5° rotation, 0.15g ≈ 10° rotation
-            bool rotated = motion_sensor.is_rotated(&data, 0.08f); // Very sensitive
-            if (rotated)
-            {
-                ESP_LOGW(TAG, "Device rotated! Turning on LCD...");
-                ESP_LOGI(TAG, "Accel: %.3f, %.3f, %.3f g",
-                         data.accel_x, data.accel_y, data.accel_z);
-
-                // Turn on LCD when rotation detected
-                button_click_common(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
-            }
-            else
-            {
-                ESP_LOGD(TAG, "Stationary. Accel: %.3f, %.3f, %.3f g",
-                         data.accel_x, data.accel_y, data.accel_z);
             }
         }
 

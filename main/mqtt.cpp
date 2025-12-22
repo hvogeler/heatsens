@@ -85,7 +85,7 @@ void Mqtt::subscribe()
 
 static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32, base, event_id);
+    // ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32, base, event_id);
     esp_mqtt_event_handle_t event = static_cast<esp_mqtt_event_handle_t>(event_data);
     esp_mqtt_client_handle_t client = event->client;
 
@@ -112,11 +112,11 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED");
         break;
     case MQTT_EVENT_PUBLISHED:
-        ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED");
+        // ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED");
         break;
     case MQTT_EVENT_DATA:
     {
-        ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+        // ESP_LOGI(TAG, "MQTT_EVENT_DATA");
         std::string topic(event->topic, event->topic_len);
         auto &mqtt = Mqtt::getInstance();
         if (topic == mqtt.get_target_temp_topic())
@@ -166,9 +166,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
 
         if (topic == mqtt.get_ctrl_info_topic())
         {
-            ESP_LOGI(TAG, "From topic %s", topic.c_str());
             std::string payload(static_cast<const char *>(event->data), event->data_len);
-            ESP_LOGD(TAG, "Raw Json: \n%s", payload.c_str());
             cJSON *json = cJSON_Parse(payload.c_str());
             cJSON *is_heating_item = cJSON_GetObjectItem(json, "is_heating");
             if (cJSON_IsNumber(is_heating_item))

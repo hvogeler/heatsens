@@ -2,6 +2,7 @@
 #include "lvgl.h"
 #include <string>
 #include "esp_timer_cxx.hpp"
+#include <mutex>
 
 enum class LcdState
 {
@@ -32,6 +33,7 @@ private:
     bool is_ssid_set;
     LcdState lcd_state;
     idf::esp_timer::ESPTimer dim_on_timer;
+    mutable std::mutex mutex_;
 
 private:
     static void update_ui();
@@ -57,6 +59,8 @@ public:
         static Ui instance;
         return instance;
     }
+
+    std::mutex &getMutex() { return mutex_; }
 
     void splash_screen();
     void main_view();

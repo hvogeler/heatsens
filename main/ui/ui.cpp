@@ -267,8 +267,13 @@ void Ui::dim_display(LcdState to_state)
 void Ui::dim_on_timer_cb()
 {
     auto &ui = Ui::getInstance();
-    ui.dim_display(LcdState::Off);
+    {
+        std::lock_guard<std::mutex> lock_ui(ui.getMutex());
+        ui.dim_display(LcdState::Off);
+    }
+
     auto &model = TempModel::getInstance();
+    std::lock_guard<std::mutex> lock_ui(model.getMutex());
     model.update_cur_temp_timer_interval(CONFIG_HEATSENS_TEMP_READ_INTERVAL_LONG);
 }
 
