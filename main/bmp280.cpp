@@ -125,8 +125,8 @@ esp_err_t Bmp280::read_raw(int32_t *raw_temp, int32_t *raw_press)
 
     if (*raw_temp == 0 || *raw_temp == 0x80000 || *raw_press == 0 || *raw_press == 0x80000)
     {
-        ESP_LOGW(TAG, "Invalid raw values - temp: 0x%x, press: 0x%x", *raw_temp, *raw_press);
-        logger.warning(TAG, "Invalid raw values - temp: 0x%x, press: 0x%x", *raw_temp, *raw_press);
+        ESP_LOGW(TAG, "Invalid raw values - temp: 0x%lx, press: 0x%lx", *raw_temp, *raw_press);
+        logger.warning(TAG, "Invalid raw values - temp: 0x%lx, press: 0x%lx", *raw_temp, *raw_press);
         return ESP_ERR_INVALID_RESPONSE;
     }
     return ESP_OK;
