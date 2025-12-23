@@ -30,10 +30,11 @@ void MqttLogger::make_log_va(Severity severity, const char *code_loc, const char
     ESP_LOGI("MqttLogger", "%s", buf);
 
     // Get device name from TempModel (no circular dependency issue now!)
+    // IMPORTANT: Don't lock the mutex here to avoid deadlock when called from TempModel methods
+    // Device name is set during initialization and doesn't change, so reading without lock is safe
     if (!device_name_opt.has_value())
     {
         TempModel &model = TempModel::getInstance();
-        std::lock_guard<std::mutex> lock_model(model.getMutex());
         device_name_opt.emplace(model.get_device_name());
     }
 
