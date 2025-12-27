@@ -217,8 +217,9 @@ extern "C" void app_main(void)
             std::string json_data;
             {
                 std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
-                json_data = temp_model.toJson();
-            }
+                json_data = temp_model.to_json();
+                ESP_LOGD(TAG, "\n%s\n", json_data.c_str());
+;            }
             {
                 std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
                 mqtt.publish(json_data);

@@ -206,8 +206,8 @@ void Ui::update_ui()
     bool is_heating, is_heating_requested;
     {
         std::lock_guard<std::mutex> lock_model(temp_model.getMutex());
-        cur_temp = temp_model.getCurTemp();
-        tgt_temp = temp_model.getTgtTemp();
+        cur_temp = temp_model.get_cur_temp();
+        tgt_temp = temp_model.get_tgt_temp();
         device_name = temp_model.get_device_name();
         heat_actuator = temp_model.get_heat_actuator();
         is_heating = temp_model.get_is_heating();

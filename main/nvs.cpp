@@ -18,6 +18,11 @@ esp_err_t Nvs::write(std::string key, double v)
     return nvs_set_i32(handle_, key.c_str(), v);
 }
 
+esp_err_t Nvs::write(std::string key, int v)
+{
+    return nvs_set_i32(handle_, key.c_str(), v);
+}
+
 esp_err_t Nvs::write(std::string key, std::string v)
 {
     return nvs_set_str(handle_, key.c_str(), v.c_str());

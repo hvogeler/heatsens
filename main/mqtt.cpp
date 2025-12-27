@@ -128,11 +128,50 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
                 cJSON *json = cJSON_Parse(tgt_temp_str.c_str());
                 cJSON *tgt_temp_json = cJSON_GetObjectItem(json, "tgt_temp");
 
-                double tgt_temp = cJSON_GetNumberValue(tgt_temp_json); // std::stod(tgt_temp_str);
+                double tgt_temp = cJSON_GetNumberValue(tgt_temp_json);
                 ESP_LOGI(TAG, "Received Target Temp: %.1f from %s", tgt_temp, topic.c_str());
+
+                // Parse optional night mode parameters
+                std::optional<double> night_temp;
+                std::optional<int> night_start;
+                std::optional<int> night_end;
+
+                cJSON *night_tgt_temp_json = cJSON_GetObjectItem(json, "night_tgt_temp");
+                if (cJSON_IsNumber(night_tgt_temp_json))
+                {
+                    night_temp = cJSON_GetNumberValue(night_tgt_temp_json);
+                }
+
+                cJSON *night_start_time_json = cJSON_GetObjectItem(json, "night_start_time");
+                if (cJSON_IsNumber(night_start_time_json))
+                {
+                    night_start = static_cast<int>(cJSON_GetNumberValue(night_start_time_json));
+                }
+
+                cJSON *night_end_time_json = cJSON_GetObjectItem(json, "night_end_time");
+                if (cJSON_IsNumber(night_end_time_json))
+                {
+                    night_end = static_cast<int>(cJSON_GetNumberValue(night_end_time_json));
+                }
+
                 auto &model = TempModel::getInstance();
                 std::lock_guard<std::mutex> lock_model(model.getMutex());
                 model.set_tgt_temp(tgt_temp);
+
+                // Set night mode parameters if provided
+                if (night_temp.has_value())
+                {
+                    model.set_night_tgt_temp(night_temp);
+                }
+                if (night_start.has_value())
+                {
+                    model.set_night_start_time(night_start);
+                }
+                if (night_end.has_value())
+                {
+                    model.set_night_end_time(night_end);
+                }
+
                 cJSON_Delete(json);
             }
             catch (const std::exception &e)
