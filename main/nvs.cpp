@@ -67,7 +67,8 @@ esp_err_t Nvs::read(std::string key, std::string &v)
     esp_err_t ret = nvs_get_str(handle_, key.c_str(), buf, &len);
     if (ret == ESP_OK)
     {
-        v = std::string(buf, len);
+        // Use c-string constructor to properly handle null terminator
+        v = std::string(buf);
         return ret;
     }
     else

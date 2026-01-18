@@ -55,6 +55,51 @@ void Ui::error_screen(std::string msg)
     // lv_obj_set_pos(lbl_splash, 0, 0);
 }
 
+void Ui::provisioning_screen(std::string device_name)
+{
+    lv_obj_t *scr = lv_screen_active();
+    lv_obj_clean(scr);
+    lv_obj_set_style_bg_color(scr, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_pad_all(scr, 10, LV_PART_MAIN);
+
+    // Title
+    lv_obj_t *lbl_title = lv_label_create(scr);
+    lv_label_set_text(lbl_title, "BLE Provisioning");
+    lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_24, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_title, lv_palette_main(LV_PALETTE_LIGHT_BLUE), LV_PART_MAIN);
+    lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 0);
+
+    // Instructions
+    lv_obj_t *lbl_instructions = lv_label_create(scr);
+    lv_label_set_text(lbl_instructions, "Use ESP SoftAP Prov app\nto configure WiFi & MQTT");
+    lv_obj_set_width(lbl_instructions, lv_pct(100));
+    lv_obj_set_style_text_font(lbl_instructions, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_instructions, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_text_align(lbl_instructions, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_align(lbl_instructions, LV_ALIGN_CENTER, 0, -20);
+
+    // Device name
+    lv_obj_t *lbl_device = lv_label_create(scr);
+    lv_label_set_text_fmt(lbl_device, "Device: %s", device_name.c_str());
+    lv_obj_set_style_text_font(lbl_device, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_device, lv_palette_main(LV_PALETTE_YELLOW), LV_PART_MAIN);
+    lv_obj_align(lbl_device, LV_ALIGN_CENTER, 0, 20);
+
+    // PoP (Proof of Possession)
+    lv_obj_t *lbl_pop = lv_label_create(scr);
+    lv_label_set_text(lbl_pop, "PoP: abcd1234");
+    lv_obj_set_style_text_font(lbl_pop, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_pop, lv_palette_main(LV_PALETTE_YELLOW), LV_PART_MAIN);
+    lv_obj_align(lbl_pop, LV_ALIGN_CENTER, 0, 45);
+
+    // Status indicator
+    lv_obj_t *lbl_status = lv_label_create(scr);
+    lv_label_set_text(lbl_status, "Waiting for connection...");
+    lv_obj_set_style_text_font(lbl_status, &lv_font_montserrat_14, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_status, lv_palette_lighten(LV_PALETTE_GREY, 2), LV_PART_MAIN);
+    lv_obj_align(lbl_status, LV_ALIGN_BOTTOM_MID, 0, -10);
+}
+
 void Ui::show_heating(bool is_show_heating)
 {
     main_view_ = lv_screen_active();

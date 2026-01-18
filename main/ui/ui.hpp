@@ -65,6 +65,7 @@ public:
     void splash_screen();
     void main_view();
     void error_screen(std::string);
+    void provisioning_screen(std::string device_name);
     void show_heating(bool);
     void show_heating_requested(bool);
     void set_cur_temp(double val);

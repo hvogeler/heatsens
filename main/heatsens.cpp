@@ -14,8 +14,11 @@
 #include <mutex>
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
+#include "ble_prov.hpp"
+#include "esp_system.h"
 
 #define TAG "heatsens"
+#define BOOT_BUTTON_GPIO GPIO_NUM_0
 
 // TODO: Configure the publish curtemp interval
 // TODO: check all lock guards for possible deadlocks
@@ -66,6 +69,27 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     default:;
     }
     btn->print_event();
+}
+
+static void reset_provisioning_cb(void *arg, void *usr_data)
+{
+    ESP_LOGW(TAG, "Boot button long pressed - resetting provisioning credentials...");
+
+    auto &ui = Ui::getInstance();
+    lvgl_port_lock(0);
+    ui.error_screen("Resetting...\nRebooting...");
+    lvgl_port_unlock();
+
+    // Reset provisioning credentials
+    auto &ble_prov = BleProv::getInstance();
+    ble_prov.reset_credentials();
+
+    // Give user time to see the message
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
+    // Reboot the device
+    ESP_LOGI(TAG, "Rebooting...");
+    esp_restart();
 }
 
 static void check_motion_cb()
@@ -131,11 +155,51 @@ extern "C" void app_main(void)
     // lcd_set_brightness_step(31);
     lcd_set_brightness_pct_fade(100, 1000);
 
-    auto &wifi = Wifi::getInstance();
-    ret = wifi.wifi_connect();
-    if (ret != ESP_OK)
+    // Check if device needs provisioning
+    auto &ble_prov = BleProv::getInstance();
+    bool used_ble_provisioning = false;
+
+    if (!ble_prov.check_provisioned())
     {
-        init_error = std::string("Wifi Error\n") + wifi.get_wifi_ssid();
+        // Device not provisioned - start BLE provisioning
+        ESP_LOGI(TAG, "Device not provisioned, starting BLE provisioning...");
+
+        // Show provisioning screen
+        lvgl_port_lock(0);
+        ui.provisioning_screen("HEATSENS");
+        lvgl_port_unlock();
+
+        ret = ble_prov.start("HEATSENS");
+        if (ret != ESP_OK)
+        {
+            init_error = "BLE Prov Error";
+        }
+        else
+        {
+            // Wait for provisioning to complete
+            ret = ble_prov.wait_for_completion(0); // Wait indefinitely
+            if (ret != ESP_OK)
+            {
+                init_error = "Provisioning Failed";
+            }
+            else
+            {
+                used_ble_provisioning = true;
+                // WiFi is already connected by the provisioning manager
+                ESP_LOGI(TAG, "BLE provisioning complete, WiFi already connected");
+            }
+        }
+    }
+
+    // Connect to WiFi using credentials from NVS (only if not already connected via BLE provisioning)
+    auto &wifi = Wifi::getInstance();
+    if (init_error.empty() && !used_ble_provisioning)
+    {
+        ret = wifi.wifi_connect();
+        if (ret != ESP_OK)
+        {
+            init_error = std::string("Wifi Error\n") + wifi.get_wifi_ssid();
+        }
     }
 
     auto &mqtt = Mqtt::getInstance();
@@ -206,6 +270,10 @@ extern "C" void app_main(void)
         }
         check_motion_timer.start_periodic(std::chrono::milliseconds(300));
     }
+
+    // Boot button (GPIO 0) for resetting provisioning on long press (3 seconds)
+    Button boot_button(BOOT_BUTTON_GPIO, 0, BUTTON_LONG_PRESS_START, reset_provisioning_cb);
+    ESP_LOGI(TAG, "Boot button configured - hold for 3s to reset provisioning");
 
     bool is_first_iter = true;
     while (1)

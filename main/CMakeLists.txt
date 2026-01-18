@@ -8,6 +8,7 @@ idf_component_register(SRCS
       "wifi.cpp"
       "i2c.cpp"
       "mqtt_logger.cpp"
+      "ble_prov.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"
       "fonts/Rubik_Regular_36.c"
@@ -24,4 +25,6 @@ idf_component_register(SRCS
       lvgl_weact_epaper
       json
       button_wrapper
+      bt
+      wifi_provisioning
     )
