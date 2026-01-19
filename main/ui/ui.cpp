@@ -185,6 +185,12 @@ void Ui::set_meta(std::string device_name, int heat_actuator)
 
 void Ui::update_ui()
 {
+    auto &ui = Ui::getInstance();
+    if (ui.is_provisioning())
+    {
+        return;
+    }
+
     auto &mqtt = Mqtt::getInstance();
     std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
     if (mqtt.get_connect_return_code() != MQTT_CONNECTION_ACCEPTED)
@@ -192,7 +198,6 @@ void Ui::update_ui()
         std::string init_error = std::string("MQTT Error\n") + mqtt.get_is_mqtt_broker_url();
         if (lvgl_port_lock(0))
         {
-            auto &ui = Ui::getInstance();
             ui.error_screen(init_error);
             lvgl_port_unlock();
             return;
@@ -293,6 +298,7 @@ void Ui::start_dim_on_timer(int32_t seconds)
 
 void Ui::provisioning_screen(const std::string &ap_ssid)
 {
+    is_provisioning_ = true;
     lv_obj_t *scr = lv_screen_active();
     lv_obj_clean(scr);
     lv_obj_set_style_bg_color(scr, lv_color_black(), LV_PART_MAIN);

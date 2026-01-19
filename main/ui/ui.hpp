@@ -31,6 +31,7 @@ private:
     std::string ssid;
 
     bool is_ssid_set;
+    bool is_provisioning_;
     LcdState lcd_state;
     idf::esp_timer::ESPTimer dim_on_timer;
     mutable std::mutex mutex_;
@@ -41,7 +42,7 @@ private:
     static void dim_on_timer_cb();
     Ui()
         : main_view_(nullptr), cur_temp_(nullptr), tgt_temp_(nullptr), lbl_heating(nullptr), ssid(""), is_ssid_set(false),
-          lcd_state(LcdState::On), dim_on_timer(Ui::dim_on_timer_cb)
+          is_provisioning_(false), lcd_state(LcdState::On), dim_on_timer(Ui::dim_on_timer_cb)
     {
     }
     ~Ui() {}
@@ -81,5 +82,15 @@ public:
     LcdState get_lcd_state()
     {
         return lcd_state;
+    }
+
+    void set_provisioning(bool v)
+    {
+        is_provisioning_ = v;
+    }
+
+    bool is_provisioning()
+    {
+        return is_provisioning_;
     }
 };

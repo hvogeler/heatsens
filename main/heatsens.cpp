@@ -69,6 +69,32 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     btn->print_event();
 }
 
+// force_provisioning_cb
+
+static void force_provisioning_cb(void *arg, void *usr_data)
+{
+    Button *btn = static_cast<Button *>(usr_data);
+    button_event_t event = btn->get_event();
+    switch (event)
+    {
+    case BUTTON_SINGLE_CLICK:
+    case BUTTON_DOUBLE_CLICK:
+    case BUTTON_LONG_PRESS_UP:
+    {
+        auto &mqtt = Mqtt::getInstance();
+        {
+            std::lock_guard<std::mutex> lock(mqtt.getMutex());
+            mqtt.stop();
+        }
+        auto &prov = WebProv::getInstance();
+        prov.start_provisioning();
+        break;
+    }
+    default:;
+    }
+    btn->print_event();
+}
+
 static void check_motion_cb()
 {
     static char *local_tag = "check_motion_cb";
@@ -137,7 +163,6 @@ extern "C" void app_main(void)
 
     // Initialize - auto-starts provisioning if not configured
     prov.init();
-    // prov.start_provisioning();
 
     I2c::getInstance().init();
 
@@ -158,6 +183,7 @@ extern "C" void app_main(void)
     auto &mqtt = Mqtt::getInstance();
     auto &temp_model = TempModel::getInstance();
     Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
+    Button force_provisioning_button(GPIO_NUM_0, 0, BUTTON_SINGLE_CLICK, force_provisioning_cb);
 
     if (init_error.empty())
     {
@@ -181,6 +207,7 @@ extern "C" void app_main(void)
         ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
         wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
+        force_provisioning_button.register_callback(BUTTON_LONG_PRESS_UP, force_provisioning_cb);
     }
     else
     {
