@@ -36,6 +36,8 @@ Create an http server that provides a POST endpoint /config that takes this payl
   "mqtt_broker": string,
   "mqtt_user": string,
   "mqtt_password": string
+  "device_name": string,
+  "actuator": number
 }
 ```
 

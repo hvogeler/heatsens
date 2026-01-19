@@ -2,6 +2,7 @@
 #include "webprov_html.h"
 
 #include <cstring>
+#include <cinttypes>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
@@ -17,14 +18,19 @@
 static const char *TAG = "webprov";
 
 #define NVS_NAMESPACE "config"
+#define NVS_NAMESPACE_META "meta"
 #define HTML_BUF_SIZE 12288
 
-// NVS keys
+// NVS keys for 'config' namespace
 #define NVS_KEY_WIFI_SSID "wifi_ssid"
 #define NVS_KEY_WIFI_PASSWORD "wifi_password"
 #define NVS_KEY_MQTT_BROKER "mqtt_broker"
 #define NVS_KEY_MQTT_USER "mqtt_user"
 #define NVS_KEY_MQTT_PASSWORD "mqtt_password"
+
+// NVS keys for 'meta' namespace
+#define NVS_KEY_DEVICE_NAME "device_name"
+#define NVS_KEY_HEAT_ACTUATOR "heat_actuator"
 
 // Event bits for provisioning flow
 #define PROV_DONE_BIT BIT0
@@ -37,6 +43,8 @@ void WebProv::clear_form_data()
     form_mqtt_broker_.clear();
     form_mqtt_user_.clear();
     form_mqtt_password_.clear();
+    form_device_name_.clear();
+    form_heat_actuator_ = 0;
     form_error_.clear();
 }
 
@@ -49,7 +57,9 @@ std::string WebProv::generate_html()
              form_wifi_password_.c_str(),
              form_mqtt_broker_.c_str(),
              form_mqtt_user_.c_str(),
-             form_mqtt_password_.c_str());
+             form_mqtt_password_.c_str(),
+             form_device_name_.c_str(),
+             static_cast<int>(form_heat_actuator_));
     std::string result(buf);
     delete[] buf;
     return result;
@@ -86,6 +96,31 @@ esp_err_t WebProv::save_config_to_nvs(const std::string &wifi_ssid,
         goto cleanup;
 
     err = nvs_set_str(handle, NVS_KEY_MQTT_PASSWORD, mqtt_password.c_str());
+    if (err != ESP_OK)
+        goto cleanup;
+
+    err = nvs_commit(handle);
+
+cleanup:
+    nvs_close(handle);
+    return err;
+}
+
+esp_err_t WebProv::save_meta_to_nvs(const std::string &device_name, int32_t heat_actuator)
+{
+    nvs_handle_t handle;
+    esp_err_t err = nvs_open(NVS_NAMESPACE_META, NVS_READWRITE, &handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to open NVS meta namespace: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    err = nvs_set_str(handle, NVS_KEY_DEVICE_NAME, device_name.c_str());
+    if (err != ESP_OK)
+        goto cleanup;
+
+    err = nvs_set_i32(handle, NVS_KEY_HEAT_ACTUATOR, heat_actuator);
     if (err != ESP_OK)
         goto cleanup;
 
@@ -138,13 +173,17 @@ esp_err_t WebProv::config_post_handler(httpd_req_t *req)
     cJSON *mqtt_broker = cJSON_GetObjectItem(json, "mqtt_broker");
     cJSON *mqtt_user = cJSON_GetObjectItem(json, "mqtt_user");
     cJSON *mqtt_password = cJSON_GetObjectItem(json, "mqtt_password");
+    cJSON *device_name = cJSON_GetObjectItem(json, "device_name");
+    cJSON *heat_actuator = cJSON_GetObjectItem(json, "heat_actuator");
 
     // Validate all fields present and non-empty
     if (!cJSON_IsString(wifi_ssid) || strlen(wifi_ssid->valuestring) == 0 ||
         !cJSON_IsString(wifi_password) || strlen(wifi_password->valuestring) == 0 ||
         !cJSON_IsString(mqtt_broker) || strlen(mqtt_broker->valuestring) == 0 ||
         !cJSON_IsString(mqtt_user) || strlen(mqtt_user->valuestring) == 0 ||
-        !cJSON_IsString(mqtt_password) || strlen(mqtt_password->valuestring) == 0)
+        !cJSON_IsString(mqtt_password) || strlen(mqtt_password->valuestring) == 0 ||
+        !cJSON_IsString(device_name) || strlen(device_name->valuestring) == 0 ||
+        !cJSON_IsNumber(heat_actuator))
     {
         // Preserve form data for re-display
         if (cJSON_IsString(wifi_ssid))
@@ -157,6 +196,10 @@ esp_err_t WebProv::config_post_handler(httpd_req_t *req)
             prov.form_mqtt_user_ = mqtt_user->valuestring;
         if (cJSON_IsString(mqtt_password))
             prov.form_mqtt_password_ = mqtt_password->valuestring;
+        if (cJSON_IsString(device_name))
+            prov.form_device_name_ = device_name->valuestring;
+        if (cJSON_IsNumber(heat_actuator))
+            prov.form_heat_actuator_ = heat_actuator->valueint;
         prov.form_error_ = "All fields are required";
 
         cJSON_Delete(json);
@@ -164,7 +207,7 @@ esp_err_t WebProv::config_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    // Save to NVS
+    // Save to NVS 'config' namespace
     esp_err_t err = prov.save_config_to_nvs(
         wifi_ssid->valuestring,
         wifi_password->valuestring,
@@ -172,12 +215,23 @@ esp_err_t WebProv::config_post_handler(httpd_req_t *req)
         mqtt_user->valuestring,
         mqtt_password->valuestring);
 
+    if (err != ESP_OK)
+    {
+        cJSON_Delete(json);
+        prov.form_error_ = "Failed to save configuration";
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to save configuration");
+        return ESP_FAIL;
+    }
+
+    // Save to NVS 'meta' namespace
+    err = prov.save_meta_to_nvs(device_name->valuestring, heat_actuator->valueint);
+
     cJSON_Delete(json);
 
     if (err != ESP_OK)
     {
-        prov.form_error_ = "Failed to save configuration";
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to save configuration");
+        prov.form_error_ = "Failed to save device metadata";
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to save device metadata");
         return ESP_FAIL;
     }
 

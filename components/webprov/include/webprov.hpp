@@ -22,12 +22,15 @@ private:
     std::string form_mqtt_broker_;
     std::string form_mqtt_user_;
     std::string form_mqtt_password_;
+    std::string form_device_name_;
+    int32_t form_heat_actuator_;
     std::string form_error_;
 
     WebProv()
         : prov_event_group_(nullptr),
           server_(nullptr),
-          ap_netif_(nullptr)
+          ap_netif_(nullptr),
+          form_heat_actuator_(0)
     {
     }
 
@@ -47,6 +50,7 @@ private:
                                   const std::string &mqtt_broker,
                                   const std::string &mqtt_user,
                                   const std::string &mqtt_password);
+    esp_err_t save_meta_to_nvs(const std::string &device_name, int32_t heat_actuator);
 
     static esp_err_t root_get_handler(httpd_req_t *req);
     static esp_err_t config_post_handler(httpd_req_t *req);

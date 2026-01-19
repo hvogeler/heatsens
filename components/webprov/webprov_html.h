@@ -197,6 +197,20 @@ static const char WEBPROV_HTML_TEMPLATE[] = R"rawliteral(
                 </div>
             </div>
 
+            <div class="section">
+                <div class="section-title">Device Settings</div>
+                <div class="form-group">
+                    <label for="device_name">Device Name</label>
+                    <input type="text" id="device_name" name="device_name" value="%s" required autocomplete="off">
+                    <div class="error-message" id="device_name-error">Please enter the device name</div>
+                </div>
+                <div class="form-group">
+                    <label for="heat_actuator">Heat Actuator</label>
+                    <input type="number" id="heat_actuator" name="heat_actuator" value="%d" required>
+                    <div class="error-message" id="heat_actuator-error">Please enter the heat actuator number</div>
+                </div>
+            </div>
+
             <div class="buttons">
                 <button type="button" class="btn-secondary" onclick="cancel()">Cancel</button>
                 <button type="submit" class="btn-primary" id="submitBtn">
@@ -211,7 +225,7 @@ static const char WEBPROV_HTML_TEMPLATE[] = R"rawliteral(
         const form = document.getElementById('configForm');
         const submitBtn = document.getElementById('submitBtn');
         const alert = document.getElementById('alert');
-        const fields = ['wifi_ssid', 'wifi_password', 'mqtt_broker', 'mqtt_user', 'mqtt_password'];
+        const fields = ['wifi_ssid', 'wifi_password', 'mqtt_broker', 'mqtt_user', 'mqtt_password', 'device_name', 'heat_actuator'];
 
         function validateField(name) {
             const input = document.getElementById(name);
@@ -248,7 +262,10 @@ static const char WEBPROV_HTML_TEMPLATE[] = R"rawliteral(
             submitBtn.disabled = true;
 
             const data = {};
-            fields.forEach(f => data[f] = document.getElementById(f).value);
+            fields.forEach(f => {
+                const val = document.getElementById(f).value;
+                data[f] = (f === 'heat_actuator') ? parseInt(val, 10) : val;
+            });
 
             try {
                 const res = await fetch('/config', {
