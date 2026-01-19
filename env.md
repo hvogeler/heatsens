@@ -1,5 +1,5 @@
 # esp-idf
-. /Users/hvo/esp/esp-idf/export.sh
+. /Users/hvo/bin/esp-idf/export.sh
 
 # usb
 ls /dev/cu*

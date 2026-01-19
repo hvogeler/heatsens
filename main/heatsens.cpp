@@ -14,6 +14,7 @@
 #include <mutex>
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
+#include "webprov.hpp"
 
 #define TAG "heatsens"
 
@@ -99,6 +100,19 @@ static void check_motion_cb()
 
 extern "C" void app_main(void)
 {
+    auto &prov = WebProv::getInstance();
+    // Set UI callback to show provisioning screen
+    prov.on_prov_start = [](const std::string &ap_ssid)
+    {
+        if (lvgl_port_lock(0))
+        {
+            Ui::getInstance().provisioning_screen(ap_ssid);
+            lvgl_port_unlock();
+        }
+    };
+
+    // Initialize - auto-starts provisioning if not configured
+    prov.init();
     I2c::getInstance().init();
 
     // Initialize NVS. It will be used in various parts of the firmware
@@ -219,7 +233,8 @@ extern "C" void app_main(void)
                 std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
                 json_data = temp_model.to_json();
                 ESP_LOGD(TAG, "\n%s\n", json_data.c_str());
-;            }
+                ;
+            }
             {
                 std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
                 mqtt.publish(json_data);
