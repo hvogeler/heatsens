@@ -20,6 +20,10 @@ static const char *TAG = "webprov";
 extern const uint8_t webprov_html_start[] asm("_binary_webprov_html_start");
 extern const uint8_t webprov_html_end[] asm("_binary_webprov_html_end");
 
+// Embedded logo SVG (from logo.svg via EMBED_FILES in CMakeLists.txt)
+extern const uint8_t logo_svg_start[] asm("_binary_logo_svg_start");
+extern const uint8_t logo_svg_end[] asm("_binary_logo_svg_end");
+
 #define NVS_NAMESPACE "config"
 #define NVS_NAMESPACE_META "meta"
 #define HTML_BUF_SIZE 12288
@@ -260,6 +264,14 @@ esp_err_t WebProv::cancel_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+esp_err_t WebProv::logo_get_handler(httpd_req_t *req)
+{
+    size_t logo_len = logo_svg_end - logo_svg_start;
+    httpd_resp_set_type(req, "image/svg+xml");
+    httpd_resp_send(req, reinterpret_cast<const char *>(logo_svg_start), logo_len);
+    return ESP_OK;
+}
+
 httpd_handle_t WebProv::start_webserver()
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -293,6 +305,13 @@ httpd_handle_t WebProv::start_webserver()
         .handler = cancel_post_handler,
         .user_ctx = nullptr};
     httpd_register_uri_handler(server_, &cancel_uri);
+
+    httpd_uri_t logo_uri = {
+        .uri = "/logo.svg",
+        .method = HTTP_GET,
+        .handler = logo_get_handler,
+        .user_ctx = nullptr};
+    httpd_register_uri_handler(server_, &logo_uri);
 
     return server_;
 }

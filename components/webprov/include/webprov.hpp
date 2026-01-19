@@ -55,6 +55,7 @@ private:
     static esp_err_t root_get_handler(httpd_req_t *req);
     static esp_err_t config_post_handler(httpd_req_t *req);
     static esp_err_t cancel_post_handler(httpd_req_t *req);
+    static esp_err_t logo_get_handler(httpd_req_t *req);
     static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                    int32_t event_id, void *event_data);
 
