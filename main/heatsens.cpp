@@ -100,6 +100,29 @@ static void check_motion_cb()
 
 extern "C" void app_main(void)
 {
+    esp_log_level_set("*", ESP_LOG_INFO);
+    esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
+    esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
+    esp_log_level_set("Mpu6050", ESP_LOG_DEBUG);
+    std::string init_error = "";
+
+    // Initialize NVS. It will be used in various parts of the firmware
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    // LVGL display handle
+    static lv_display_t *disp_handle;
+
+    // initialize the LCD
+    // don't turn on backlight yet - demo of gradual brightness increase is shown below
+    // otherwise you can set it to true to turn on the backlight at lcd init
+    lcd_init(&disp_handle, false);
+
     auto &prov = WebProv::getInstance();
     // Set UI callback to show provisioning screen
     prov.on_prov_start = [](const std::string &ap_ssid)
@@ -113,30 +136,9 @@ extern "C" void app_main(void)
 
     // Initialize - auto-starts provisioning if not configured
     prov.init();
+    // prov.start_provisioning();
+
     I2c::getInstance().init();
-
-    // Initialize NVS. It will be used in various parts of the firmware
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
-    esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
-    esp_log_level_set("Mpu6050", ESP_LOG_DEBUG);
-    std::string init_error = "";
-
-    // LVGL display handle
-    static lv_display_t *disp_handle;
-
-    // initialize the LCD
-    // don't turn on backlight yet - demo of gradual brightness increase is shown below
-    // otherwise you can set it to true to turn on the backlight at lcd init
-    lcd_init(&disp_handle, false);
 
     lvgl_port_lock(0);
     auto &ui = Ui::getInstance();

@@ -20,15 +20,15 @@ static const char *TAG = "webprov";
 #define HTML_BUF_SIZE 12288
 
 // NVS keys
-#define NVS_KEY_WIFI_SSID      "wifi_ssid"
-#define NVS_KEY_WIFI_PASSWORD  "wifi_password"
-#define NVS_KEY_MQTT_BROKER    "mqtt_broker"
-#define NVS_KEY_MQTT_USER      "mqtt_user"
-#define NVS_KEY_MQTT_PASSWORD  "mqtt_password"
+#define NVS_KEY_WIFI_SSID "wifi_ssid"
+#define NVS_KEY_WIFI_PASSWORD "wifi_password"
+#define NVS_KEY_MQTT_BROKER "mqtt_broker"
+#define NVS_KEY_MQTT_USER "mqtt_user"
+#define NVS_KEY_MQTT_PASSWORD "mqtt_password"
 
 // Event bits for provisioning flow
-#define PROV_DONE_BIT     BIT0
-#define PROV_CANCEL_BIT   BIT1
+#define PROV_DONE_BIT BIT0
+#define PROV_CANCEL_BIT BIT1
 
 void WebProv::clear_form_data()
 {
@@ -56,10 +56,10 @@ std::string WebProv::generate_html()
 }
 
 esp_err_t WebProv::save_config_to_nvs(const std::string &wifi_ssid,
-                                       const std::string &wifi_password,
-                                       const std::string &mqtt_broker,
-                                       const std::string &mqtt_user,
-                                       const std::string &mqtt_password)
+                                      const std::string &wifi_password,
+                                      const std::string &mqtt_broker,
+                                      const std::string &mqtt_user,
+                                      const std::string &mqtt_password)
 {
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
@@ -70,19 +70,24 @@ esp_err_t WebProv::save_config_to_nvs(const std::string &wifi_ssid,
     }
 
     err = nvs_set_str(handle, NVS_KEY_WIFI_SSID, wifi_ssid.c_str());
-    if (err != ESP_OK) goto cleanup;
+    if (err != ESP_OK)
+        goto cleanup;
 
     err = nvs_set_str(handle, NVS_KEY_WIFI_PASSWORD, wifi_password.c_str());
-    if (err != ESP_OK) goto cleanup;
+    if (err != ESP_OK)
+        goto cleanup;
 
     err = nvs_set_str(handle, NVS_KEY_MQTT_BROKER, mqtt_broker.c_str());
-    if (err != ESP_OK) goto cleanup;
+    if (err != ESP_OK)
+        goto cleanup;
 
     err = nvs_set_str(handle, NVS_KEY_MQTT_USER, mqtt_user.c_str());
-    if (err != ESP_OK) goto cleanup;
+    if (err != ESP_OK)
+        goto cleanup;
 
     err = nvs_set_str(handle, NVS_KEY_MQTT_PASSWORD, mqtt_password.c_str());
-    if (err != ESP_OK) goto cleanup;
+    if (err != ESP_OK)
+        goto cleanup;
 
     err = nvs_commit(handle);
 
@@ -142,11 +147,16 @@ esp_err_t WebProv::config_post_handler(httpd_req_t *req)
         !cJSON_IsString(mqtt_password) || strlen(mqtt_password->valuestring) == 0)
     {
         // Preserve form data for re-display
-        if (cJSON_IsString(wifi_ssid)) prov.form_wifi_ssid_ = wifi_ssid->valuestring;
-        if (cJSON_IsString(wifi_password)) prov.form_wifi_password_ = wifi_password->valuestring;
-        if (cJSON_IsString(mqtt_broker)) prov.form_mqtt_broker_ = mqtt_broker->valuestring;
-        if (cJSON_IsString(mqtt_user)) prov.form_mqtt_user_ = mqtt_user->valuestring;
-        if (cJSON_IsString(mqtt_password)) prov.form_mqtt_password_ = mqtt_password->valuestring;
+        if (cJSON_IsString(wifi_ssid))
+            prov.form_wifi_ssid_ = wifi_ssid->valuestring;
+        if (cJSON_IsString(wifi_password))
+            prov.form_wifi_password_ = wifi_password->valuestring;
+        if (cJSON_IsString(mqtt_broker))
+            prov.form_mqtt_broker_ = mqtt_broker->valuestring;
+        if (cJSON_IsString(mqtt_user))
+            prov.form_mqtt_user_ = mqtt_user->valuestring;
+        if (cJSON_IsString(mqtt_password))
+            prov.form_mqtt_password_ = mqtt_password->valuestring;
         prov.form_error_ = "All fields are required";
 
         cJSON_Delete(json);
@@ -240,7 +250,7 @@ void WebProv::stop_webserver()
 }
 
 void WebProv::wifi_event_handler(void *arg, esp_event_base_t event_base,
-                                  int32_t event_id, void *event_data)
+                                 int32_t event_id, void *event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED)
     {
@@ -286,10 +296,10 @@ esp_err_t WebProv::start_wifi_ap()
     // Register event handler
     esp_event_handler_instance_t instance_any_id;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                         ESP_EVENT_ANY_ID,
-                                                         &wifi_event_handler,
-                                                         nullptr,
-                                                         &instance_any_id));
+                                                        ESP_EVENT_ANY_ID,
+                                                        &wifi_event_handler,
+                                                        nullptr,
+                                                        &instance_any_id));
 
     // Configure AP
     wifi_config_t wifi_config = {};
@@ -323,8 +333,11 @@ void WebProv::stop_wifi_ap()
 
 bool WebProv::is_provisioned()
 {
+    ESP_LOGI(TAG, "B");
+
     nvs_handle_t handle;
     esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+    ESP_LOGI(TAG, "C");
     if (err != ESP_OK)
     {
         return false;
@@ -374,9 +387,9 @@ void WebProv::run_provisioning()
 
     // Wait for provisioning to complete or cancel
     EventBits_t bits = xEventGroupWaitBits(prov_event_group_,
-                                            PROV_DONE_BIT | PROV_CANCEL_BIT,
-                                            pdFALSE, pdFALSE,
-                                            portMAX_DELAY);
+                                           PROV_DONE_BIT | PROV_CANCEL_BIT,
+                                           pdFALSE, pdFALSE,
+                                           portMAX_DELAY);
 
     // Small delay to allow HTTP response to be sent
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -408,6 +421,7 @@ void WebProv::run_provisioning()
 
 esp_err_t WebProv::init()
 {
+    ESP_LOGI(TAG, "A");
     if (!is_provisioned())
     {
         ESP_LOGI(TAG, "Device not provisioned. Starting provisioning...");
