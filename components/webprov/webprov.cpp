@@ -1,5 +1,4 @@
 #include "webprov.hpp"
-#include "webprov_html.h"
 
 #include <cstring>
 #include <cinttypes>
@@ -16,6 +15,10 @@
 #include "cJSON.h"
 
 static const char *TAG = "webprov";
+
+// Embedded HTML template (from webprov.html via EMBED_FILES in CMakeLists.txt)
+extern const uint8_t webprov_html_start[] asm("_binary_webprov_html_start");
+extern const uint8_t webprov_html_end[] asm("_binary_webprov_html_end");
 
 #define NVS_NAMESPACE "config"
 #define NVS_NAMESPACE_META "meta"
@@ -51,7 +54,7 @@ void WebProv::clear_form_data()
 std::string WebProv::generate_html()
 {
     char *buf = new char[HTML_BUF_SIZE];
-    snprintf(buf, HTML_BUF_SIZE, WEBPROV_HTML_TEMPLATE,
+    snprintf(buf, HTML_BUF_SIZE, reinterpret_cast<const char *>(webprov_html_start),
              form_error_.c_str(),
              form_wifi_ssid_.c_str(),
              form_wifi_password_.c_str(),

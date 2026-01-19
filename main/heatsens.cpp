@@ -129,6 +129,7 @@ extern "C" void app_main(void)
     {
         if (lvgl_port_lock(0))
         {
+            lcd_set_brightness_pct_fade(100, 1000);
             Ui::getInstance().provisioning_screen(ap_ssid);
             lvgl_port_unlock();
         }
