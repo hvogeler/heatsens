@@ -199,7 +199,7 @@ esp_err_t Bmp280::init()
     i2c_device_config_t dev_config = {};
     dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
     dev_config.device_address = BMP280_I2C_ADDRESS_0;
-    dev_config.scl_speed_hz = I2C_MASTER_FREQ_HZ;
+    dev_config.scl_speed_hz = 100000;
 
     auto &i2c = I2c::getInstance();
     std::lock_guard<std::mutex> i2c_lock(i2c.getMutex());

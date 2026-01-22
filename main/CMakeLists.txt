@@ -6,7 +6,6 @@ idf_component_register(SRCS
       "mqtt.cpp"
       "nvs.cpp"
       "wifi.cpp"
-      "i2c.cpp"
       "mqtt_logger.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"

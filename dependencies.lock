@@ -54,6 +54,16 @@ dependencies:
       path: .
       type: git
     version: 88960d249a5219e4e4a2f0715b9444954b005e93
+  i2c:
+    component_hash: f69222c926209f36ce08569b55dad43d1ccc96cada037fd82a7cd1cb5cd4dfea
+    dependencies:
+    - name: idf
+      version: '>=5.0.0'
+    source:
+      git: https://github.com/hvogeler/esp-components.git
+      path: i2c
+      type: git
+    version: 548b2a107ec39e42f1f7c5dcbab34217c166908e
   idf:
     source:
       type: idf
@@ -70,8 +80,9 @@ direct_dependencies:
 - espressif/esp-idf-cxx
 - espressif/esp_lvgl_port
 - hiruna/esp-idf-aw9364
+- i2c
 - idf
 - lvgl/lvgl
-manifest_hash: fab0d1e860312292a8e97a7a0df5895baf2553d90d509e069707b025f293b519
+manifest_hash: d3baf7ceedbee60137fdd4728cf1e16c6ad4ae5d20da21f8ce19c2107aa26b11
 target: esp32s3
 version: 2.0.0
