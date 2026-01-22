@@ -1,0 +1,24 @@
+menu "Web Provisioning"
+
+    config WEBPROV_PROJECT_NAME
+        string "Project name"
+        default "heatsens"
+        help
+            The name of this project. Used in various places such as
+            the WiFi AP SSID during provisioning, logging, and display.
+
+    config WEBPROV_AP_CHANNEL
+        int "WiFi AP channel"
+        default 1
+        range 1 13
+        help
+            WiFi channel for the provisioning access point.
+
+    config WEBPROV_AP_MAX_CONNECTIONS
+        int "Max AP connections"
+        default 4
+        range 1 10
+        help
+            Maximum number of simultaneous connections to the provisioning AP.
+
+endmenu

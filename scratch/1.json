@@ -1,0 +1,9 @@
+{
+    "mqtt_user": "mqtt",
+    "device_name": "Bad",
+    "heat_actuator ": 3,
+    "wifi_ssid": "vogeler2129",
+    "mqtt_password": "mqtt",
+    "wifi_password": "ghn5327301",
+    "mqtt_broker": "mqtt:\/\/mosquitto.hvo.lan"
+}

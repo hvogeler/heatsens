@@ -101,6 +101,7 @@ public:
     void publish(std::string);
     void publish_log(std::string, std::string);
     void subscribe();
+    esp_err_t stop();
 
 private:
     // Private constructor

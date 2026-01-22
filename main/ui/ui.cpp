@@ -185,6 +185,12 @@ void Ui::set_meta(std::string device_name, int heat_actuator)
 
 void Ui::update_ui()
 {
+    auto &ui = Ui::getInstance();
+    if (ui.is_provisioning())
+    {
+        return;
+    }
+
     auto &mqtt = Mqtt::getInstance();
     std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
     if (mqtt.get_connect_return_code() != MQTT_CONNECTION_ACCEPTED)
@@ -192,7 +198,6 @@ void Ui::update_ui()
         std::string init_error = std::string("MQTT Error\n") + mqtt.get_is_mqtt_broker_url();
         if (lvgl_port_lock(0))
         {
-            auto &ui = Ui::getInstance();
             ui.error_screen(init_error);
             lvgl_port_unlock();
             return;
@@ -289,4 +294,41 @@ void Ui::start_dim_on_timer(int32_t seconds)
     }
     ESP_LOGI(TAG, "Setting Lcd On Timer to %d seconds", seconds);
     dim_on_timer.start(std::chrono::seconds(seconds));
+}
+
+void Ui::provisioning_screen(const std::string &ap_ssid)
+{
+    is_provisioning_ = true;
+    lv_obj_t *scr = lv_screen_active();
+    lv_obj_clean(scr);
+    lv_obj_set_style_bg_color(scr, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_pad_all(scr, 10, LV_PART_MAIN);
+
+    // Title
+    lv_obj_t *lbl_title = lv_label_create(scr);
+    lv_label_set_text(lbl_title, "Provisioning Mode");
+    lv_obj_set_style_text_font(lbl_title, &lv_font_montserrat_24, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_title, lv_palette_main(LV_PALETTE_AMBER), LV_PART_MAIN);
+    lv_obj_align(lbl_title, LV_ALIGN_TOP_MID, 0, 10);
+
+    // Instructions
+    lv_obj_t *lbl_instructions = lv_label_create(scr);
+    lv_label_set_text(lbl_instructions, "Connect to WiFi:");
+    lv_obj_set_style_text_font(lbl_instructions, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_instructions, lv_color_white(), LV_PART_MAIN);
+    lv_obj_align(lbl_instructions, LV_ALIGN_CENTER, 0, -20);
+
+    // AP SSID
+    lv_obj_t *lbl_ssid = lv_label_create(scr);
+    lv_label_set_text(lbl_ssid, ap_ssid.c_str());
+    lv_obj_set_style_text_font(lbl_ssid, &lv_font_montserrat_24, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_ssid, lv_palette_main(LV_PALETTE_LIGHT_GREEN), LV_PART_MAIN);
+    lv_obj_align(lbl_ssid, LV_ALIGN_CENTER, 0, 10);
+
+    // URL hint
+    lv_obj_t *lbl_url = lv_label_create(scr);
+    lv_label_set_text(lbl_url, "Then open: http://192.168.4.1");
+    lv_obj_set_style_text_font(lbl_url, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_url, lv_palette_lighten(LV_PALETTE_GREY, 2), LV_PART_MAIN);
+    lv_obj_align(lbl_url, LV_ALIGN_BOTTOM_MID, 0, -10);
 }

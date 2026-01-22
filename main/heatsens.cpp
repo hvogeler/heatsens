@@ -14,6 +14,7 @@
 #include <mutex>
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
+#include "webprov.hpp"
 
 #define TAG "heatsens"
 
@@ -68,6 +69,30 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     btn->print_event();
 }
 
+static void force_provisioning_cb(void *arg, void *usr_data)
+{
+    Button *btn = static_cast<Button *>(usr_data);
+    button_event_t event = btn->get_event();
+    switch (event)
+    {
+    case BUTTON_SINGLE_CLICK:
+    case BUTTON_DOUBLE_CLICK:
+    case BUTTON_LONG_PRESS_UP:
+    {
+        auto &mqtt = Mqtt::getInstance();
+        {
+            std::lock_guard<std::mutex> lock(mqtt.getMutex());
+            mqtt.stop();
+        }
+        auto &prov = WebProv::getInstance();
+        prov.start_provisioning();
+        break;
+    }
+    default:;
+    }
+    btn->print_event();
+}
+
 static void check_motion_cb()
 {
     static char *local_tag = "check_motion_cb";
@@ -99,7 +124,11 @@ static void check_motion_cb()
 
 extern "C" void app_main(void)
 {
-    I2c::getInstance().init();
+    esp_log_level_set("*", ESP_LOG_INFO);
+    esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
+    esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
+    esp_log_level_set("Mpu6050", ESP_LOG_DEBUG);
+    std::string init_error = "";
 
     // Initialize NVS. It will be used in various parts of the firmware
     esp_err_t ret = nvs_flash_init();
@@ -110,12 +139,6 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("hts_mqtt", ESP_LOG_VERBOSE);
-    esp_log_level_set("heatsens", ESP_LOG_VERBOSE);
-    esp_log_level_set("Mpu6050", ESP_LOG_DEBUG);
-    std::string init_error = "";
-
     // LVGL display handle
     static lv_display_t *disp_handle;
 
@@ -123,6 +146,23 @@ extern "C" void app_main(void)
     // don't turn on backlight yet - demo of gradual brightness increase is shown below
     // otherwise you can set it to true to turn on the backlight at lcd init
     lcd_init(&disp_handle, false);
+
+    auto &prov = WebProv::getInstance();
+    // Set UI callback to show provisioning screen
+    prov.on_prov_start = [](const std::string &ap_ssid)
+    {
+        if (lvgl_port_lock(0))
+        {
+            lcd_set_brightness_pct_fade(100, 1000);
+            Ui::getInstance().provisioning_screen(ap_ssid);
+            lvgl_port_unlock();
+        }
+    };
+
+    // Initialize - auto-starts provisioning if not configured
+    prov.init();
+
+    I2c::getInstance().init();
 
     lvgl_port_lock(0);
     auto &ui = Ui::getInstance();
@@ -141,6 +181,7 @@ extern "C" void app_main(void)
     auto &mqtt = Mqtt::getInstance();
     auto &temp_model = TempModel::getInstance();
     Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
+    Button force_provisioning_button(GPIO_NUM_0, 0, BUTTON_SINGLE_CLICK, force_provisioning_cb);
 
     if (init_error.empty())
     {
@@ -164,6 +205,7 @@ extern "C" void app_main(void)
         ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
         wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
+        force_provisioning_button.register_callback(BUTTON_LONG_PRESS_UP, force_provisioning_cb);
     }
     else
     {
@@ -219,7 +261,8 @@ extern "C" void app_main(void)
                 std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
                 json_data = temp_model.to_json();
                 ESP_LOGD(TAG, "\n%s\n", json_data.c_str());
-;            }
+                ;
+            }
             {
                 std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
                 mqtt.publish(json_data);

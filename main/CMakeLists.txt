@@ -24,4 +24,5 @@ idf_component_register(SRCS
       lvgl_weact_epaper
       json
       button_wrapper
+      webprov
     )
