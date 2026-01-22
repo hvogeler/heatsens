@@ -33,4 +33,10 @@ dependencies:
   i2c:
     git: https://github.com/hvogeler/esp-components.git
     path: i2c
-    version: "1.0.1"
+    version: "1.0.2"
+  bmp280:
+    git: https://github.com/hvogeler/esp-components.git
+    path: bmp280
+    version: "1.0.2"
+  # bmp280:
+  #   path: /Users/hvo/Esp32/esp-components/bmp280

@@ -1,7 +1,6 @@
 idf_component_register(SRCS
       "heatsens.cpp"
       "temp_model.cpp"
-      "bmp280.cpp"
       "mpu6050.cpp"
       "mqtt.cpp"
       "nvs.cpp"

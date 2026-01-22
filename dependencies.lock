@@ -1,4 +1,18 @@
 dependencies:
+  bmp280:
+    component_hash: 8ab413ab557c8ff449e4b7e7a8166d4914e6fd5d808bb453c57ba348b40b292b
+    dependencies:
+    - name: idf
+      version: '>=5.0.0'
+    - git: https://github.com/hvogeler/esp-components.git
+      name: i2c
+      path: i2c
+      version: '*'
+    source:
+      git: https://github.com/hvogeler/esp-components.git
+      path: bmp280
+      type: git
+    version: 4e8a1a62a3b91c586248221304785457e7d2f47a
   espressif/button:
     component_hash: 4ed25fcf354b48aa5e5680b9e7549e38d7738f9b613c94a2e39119c100db9c95
     dependencies:
@@ -55,7 +69,7 @@ dependencies:
       type: git
     version: 88960d249a5219e4e4a2f0715b9444954b005e93
   i2c:
-    component_hash: f69222c926209f36ce08569b55dad43d1ccc96cada037fd82a7cd1cb5cd4dfea
+    component_hash: d4717d6553fa958d75671310f924b66d62a61181b71efd63966b8e48aa925d28
     dependencies:
     - name: idf
       version: '>=5.0.0'
@@ -63,7 +77,7 @@ dependencies:
       git: https://github.com/hvogeler/esp-components.git
       path: i2c
       type: git
-    version: 548b2a107ec39e42f1f7c5dcbab34217c166908e
+    version: 4e8a1a62a3b91c586248221304785457e7d2f47a
   idf:
     source:
       type: idf
@@ -76,6 +90,7 @@ dependencies:
       type: service
     version: 9.4.0
 direct_dependencies:
+- bmp280
 - espressif/button
 - espressif/esp-idf-cxx
 - espressif/esp_lvgl_port
@@ -83,6 +98,6 @@ direct_dependencies:
 - i2c
 - idf
 - lvgl/lvgl
-manifest_hash: d3baf7ceedbee60137fdd4728cf1e16c6ad4ae5d20da21f8ce19c2107aa26b11
+manifest_hash: 28fe8302e12b4b6c2ac176b12be3b1877ec4be329951263d00d0c0ea1bd99d4e
 target: esp32s3
 version: 2.0.0
