@@ -69,8 +69,6 @@ static void wake_up_button_cb(void *arg, void *usr_data)
     btn->print_event();
 }
 
-// force_provisioning_cb
-
 static void force_provisioning_cb(void *arg, void *usr_data)
 {
     Button *btn = static_cast<Button *>(usr_data);
