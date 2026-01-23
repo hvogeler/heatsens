@@ -64,12 +64,12 @@ dependencies:
     component_hash: 4564086e52d5a39b267243f32cf9318b3ff9ae43180634f533b5a970b8812e8c
     dependencies: []
     source:
-      git: https://github.com/hiruna/esp-idf-aw9364.git
+      git: https://github.com/hvogeler/esp-idf-aw9364.git
       path: .
       type: git
     version: 88960d249a5219e4e4a2f0715b9444954b005e93
   i2c:
-    component_hash: d4717d6553fa958d75671310f924b66d62a61181b71efd63966b8e48aa925d28
+    component_hash: 1d7ea1291a38326d29e0c9e292d98431ba9d68a0921b410de91627e16967cb60
     dependencies:
     - name: idf
       version: '>=5.0.0'
@@ -77,7 +77,7 @@ dependencies:
       git: https://github.com/hvogeler/esp-components.git
       path: i2c
       type: git
-    version: 4e8a1a62a3b91c586248221304785457e7d2f47a
+    version: ab8fac90d8533d06b6b3616e044c452ca37aa2f3
   idf:
     source:
       type: idf
@@ -89,6 +89,19 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 9.4.0
+  tdisplays3:
+    component_hash: dd93b2f25d00854b550a60cf241d0306976029815a2e374b11709377f70b0bfb
+    dependencies:
+    - name: idf
+      version: '>=5.0.0'
+    - git: https://github.com/hvogeler/esp-idf-aw9364.git
+      name: hiruna/esp-idf-aw9364
+      version: main
+    source:
+      git: https://github.com/hvogeler/esp-components.git
+      path: tdisplays3
+      type: git
+    version: ab8fac90d8533d06b6b3616e044c452ca37aa2f3
 direct_dependencies:
 - bmp280
 - espressif/button
@@ -98,6 +111,7 @@ direct_dependencies:
 - i2c
 - idf
 - lvgl/lvgl
-manifest_hash: 765b90cfc151961a7b4b1ddab54dc6778a4ef54ca21a1649d530f656d9d52069
+- tdisplays3
+manifest_hash: 821ccc05d54d1daa311b33cce8e806fc19f4368337b89633aa02678f571065df
 target: esp32s3
 version: 2.0.0

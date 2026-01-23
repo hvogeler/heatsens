@@ -38,5 +38,9 @@ dependencies:
     git: https://github.com/hvogeler/esp-components.git
     path: bmp280
     version: "1.0.2"
-  # bmp280:
-  #   path: /Users/hvo/Esp32/esp-components/bmp280
+  tdisplays3:
+    git: https://github.com/hvogeler/esp-components.git
+    path: tdisplays3
+    version: "1.0.3"
+  # tdisplays3:
+  #   path: /Users/hvo/Esp32/esp-components/tdisplays3
