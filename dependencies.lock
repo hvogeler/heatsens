@@ -1,6 +1,6 @@
 dependencies:
   espressif/button:
-    component_hash: 4ed25fcf354b48aa5e5680b9e7549e38d7738f9b613c94a2e39119c100db9c95
+    component_hash: fccb18c37f1cfe0797b74a53a44d3f400f5fd01f4993b40052dfb7f401915089
     dependencies:
     - name: espressif/cmake_utilities
       registry_url: https://components.espressif.com
@@ -12,7 +12,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 4.1.4
+    version: 4.1.5
   espressif/cmake_utilities:
     component_hash: 05165f30922b422b4b90c08845e6d449329b97370fbd06309803d8cb539d79e3
     dependencies:
@@ -34,7 +34,7 @@ dependencies:
       type: service
     version: 1.0.2-beta
   espressif/esp_lvgl_port:
-    component_hash: 63189e2fc4d9b176bd92061f7bd0ab00c0ad9b8830d34757188ab5353adcb122
+    component_hash: 8f7fba0a8be48b3de7b4d8e028a0d5373ef68932417a2618f98d3ce6b23563de
     dependencies:
     - name: idf
       version: '>=5.1'
@@ -45,7 +45,7 @@ dependencies:
       git: https://github.com/espressif/esp-bsp.git
       path: components/esp_lvgl_port
       type: git
-    version: 21c6cd051751304c80d699c850b12c310b6f9a1d
+    version: 53f6127ba3a1dd80fbdf9a76b759ccd1a8dc0101
   hiruna/esp-idf-aw9364:
     component_hash: 4564086e52d5a39b267243f32cf9318b3ff9ae43180634f533b5a970b8812e8c
     dependencies: []
@@ -55,7 +55,7 @@ dependencies:
       type: git
     version: 88960d249a5219e4e4a2f0715b9444954b005e93
   hvo/bmp280:
-    component_hash: f132962b020673398d81d3e606e85ed7a7d74ed13892bc143733a0e47cad946e
+    component_hash: d71970b52cf9181e1af050f53a1ef2aacce69de9a0276d03e13e169c2fb5701d
     dependencies:
     - name: idf
       version: '>=5.0.0'
@@ -67,9 +67,9 @@ dependencies:
       git: https://github.com/hvogeler/esp-components.git
       path: bmp280
       type: git
-    version: 18c231a8088de166ab1683f2c9254f4170a233e1
+    version: d29e0b63e0d9545288a56e96d3fb9bfef5e5b45f
   hvo/i2c:
-    component_hash: cef5f0f0c4dedd1d6708da3f54036ff311ee1959cb2e36d8be27560f2d0349cf
+    component_hash: 2124b81d85a109e027d8fb761d9bac6ef8a36c7a518b4e8a1e25aea5081a5206
     dependencies:
     - name: idf
       version: '>=5.0.0'
@@ -77,9 +77,9 @@ dependencies:
       git: https://github.com/hvogeler/esp-components.git
       path: i2c
       type: git
-    version: 18c231a8088de166ab1683f2c9254f4170a233e1
+    version: d29e0b63e0d9545288a56e96d3fb9bfef5e5b45f
   hvo/tdisplays3:
-    component_hash: ab84a0e5bdf7f452f109e2b2c59decc1ca0107481cd5a07d2fa024997f4ab0bb
+    component_hash: 4971e8effdf5ac448b113d55eb1b849b3e9674129890570c0a3fe3e84bf1e018
     dependencies:
     - name: idf
       version: '>=5.0.0'
@@ -90,7 +90,7 @@ dependencies:
       git: https://github.com/hvogeler/esp-components.git
       path: tdisplays3
       type: git
-    version: 18c231a8088de166ab1683f2c9254f4170a233e1
+    version: d29e0b63e0d9545288a56e96d3fb9bfef5e5b45f
   idf:
     source:
       type: idf
@@ -112,6 +112,6 @@ direct_dependencies:
 - hvo/tdisplays3
 - idf
 - lvgl/lvgl
-manifest_hash: 0e89691f20c45d5a822222f5ff5bf58aac781f7c15278390e584d03c8955adaf
+manifest_hash: 107ca36963ccee34015b5e400a6507dbaa22dedecd285402628e1aef5a260073
 target: esp32s3
 version: 2.0.0
