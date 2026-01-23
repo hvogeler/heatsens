@@ -29,7 +29,7 @@ extern "C"
 #define LCD_PIN_NUM_CS 6        // LCD_CS
 #define LCD_PIN_NUM_RST 5       // LCD_RES
 
-#define LCD_BK_LIGHT_LEDC_CH 0
+#define LCD_BK_LIGHT_LEDC_CH CONFIG_TDISPLAYS3_LCD_BK_LIGHT_LEDC_CH
 
 // T-Display Battery Voltage
 #define BAT_PIN_NUM_VOLT 4         // (ADC_UNIT_1, ADC_CHANNEL_3) -  LCD_BAT_VOLT
@@ -60,10 +60,10 @@ extern "C"
 #define LCD_I80_BUS_WIDTH 8
 
 // PCLK frequency can't go too high as the limitation of PSRAM bandwidth
-// try 2-17
-#define LCD_PIXEL_CLOCK_HZ (17 * 1000 * 1000)
+// Configurable via Kconfig (2-17 MHz)
+#define LCD_PIXEL_CLOCK_HZ (CONFIG_TDISPLAYS3_LCD_PIXEL_CLOCK_MHZ * 1000 * 1000)
 
-#define LCD_I80_TRANS_QUEUE_SIZE 20
+#define LCD_I80_TRANS_QUEUE_SIZE CONFIG_TDISPLAYS3_LCD_I80_TRANS_QUEUE_SIZE
 #define LCD_I80_DC_CMD_LEVEL 0
 #define LCD_I80_DC_CMD_LEVEL 0
 #define LCD_I80_DC_DUMMY_LEVEL 0
@@ -77,11 +77,11 @@ extern "C"
 // best to keep this as is (1/10th of the display pixels)
 #define LVGL_BUFFER_SIZE (((LCD_H_RES * LCD_V_RES) / 10) + LCD_H_RES)
 
-// LVGL Timer options
-#define LVGL_TICK_PERIOD_MS 5 // original: 5
-#define LVGL_MAX_SLEEP_MS (LVGL_TICK_PERIOD_MS * 2) // this affects how fast the screen is refreshed
-#define LVGL_TASK_STACK_SIZE (8 * 1024)
-#define LVGL_TASK_PRIORITY 2
+// LVGL Timer options (configurable via Kconfig)
+#define LVGL_TICK_PERIOD_MS CONFIG_TDISPLAYS3_LVGL_TICK_PERIOD_MS
+#define LVGL_MAX_SLEEP_MS CONFIG_TDISPLAYS3_LVGL_MAX_SLEEP_MS
+#define LVGL_TASK_STACK_SIZE CONFIG_TDISPLAYS3_LVGL_TASK_STACK_SIZE
+#define LVGL_TASK_PRIORITY CONFIG_TDISPLAYS3_LVGL_TASK_PRIORITY
 
     void lcd_init(lv_disp_t **disp_handle, bool backlight_on);
 

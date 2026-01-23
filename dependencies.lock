@@ -98,6 +98,6 @@ direct_dependencies:
 - i2c
 - idf
 - lvgl/lvgl
-manifest_hash: 28fe8302e12b4b6c2ac176b12be3b1877ec4be329951263d00d0c0ea1bd99d4e
+manifest_hash: 765b90cfc151961a7b4b1ddab54dc6778a4ef54ca21a1649d530f656d9d52069
 target: esp32s3
 version: 2.0.0

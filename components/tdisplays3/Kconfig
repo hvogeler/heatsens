@@ -1,0 +1,56 @@
+menu "T-Display S3 Configuration"
+
+    menu "LVGL Task Settings"
+        config TDISPLAYS3_LVGL_TASK_PRIORITY
+            int "LVGL task priority"
+            default 2
+            range 1 24
+            help
+                Priority of the LVGL task. Adjust based on other task priorities in your project.
+
+        config TDISPLAYS3_LVGL_TASK_STACK_SIZE
+            int "LVGL task stack size (bytes)"
+            default 8192
+            range 4096 16384
+            help
+                Stack size for the LVGL task. Increase if you experience stack overflows.
+
+        config TDISPLAYS3_LVGL_TICK_PERIOD_MS
+            int "LVGL tick period (ms)"
+            default 5
+            range 1 20
+            help
+                LVGL tick period in milliseconds. Lower values increase responsiveness but use more CPU.
+
+        config TDISPLAYS3_LVGL_MAX_SLEEP_MS
+            int "LVGL max sleep time (ms)"
+            default 10
+            range 2 100
+            help
+                Maximum sleep time for LVGL task. Affects screen refresh rate.
+    endmenu
+
+    menu "LCD Settings"
+        config TDISPLAYS3_LCD_BK_LIGHT_LEDC_CH
+            int "Backlight LEDC channel"
+            default 0
+            range 0 7
+            help
+                LEDC channel used for backlight PWM control. Change if conflicts with other LEDC usage.
+
+        config TDISPLAYS3_LCD_PIXEL_CLOCK_MHZ
+            int "LCD pixel clock frequency (MHz)"
+            default 17
+            range 2 17
+            help
+                Pixel clock frequency. Higher values improve performance but may cause issues with PSRAM bandwidth.
+
+        config TDISPLAYS3_LCD_I80_TRANS_QUEUE_SIZE
+            int "I80 transaction queue size"
+            default 20
+            range 10 50
+            help
+                Number of transactions that can be queued. Higher values use more memory but improve throughput.
+    endmenu
+
+endmenu
