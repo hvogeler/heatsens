@@ -30,17 +30,17 @@ dependencies:
     git: https://github.com/hiruna/esp-idf-aw9364.git
     version: main
   espressif/button: ^4.1.4
-  i2c:
+  hvo/i2c:
     git: https://github.com/hvogeler/esp-components.git
     path: i2c
-    version: "1.0.2"
-  bmp280:
+    version: "1.0.7"
+  hvo/bmp280:
     git: https://github.com/hvogeler/esp-components.git
     path: bmp280
-    version: "1.0.2"
-  tdisplays3:
+    version: "1.0.7"
+  hvo/tdisplays3:
     git: https://github.com/hvogeler/esp-components.git
     path: tdisplays3
-    version: "1.0.3"
+    version: "1.0.7"
   # tdisplays3:
   #   path: /Users/hvo/Esp32/esp-components/tdisplays3
