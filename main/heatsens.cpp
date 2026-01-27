@@ -263,6 +263,9 @@ extern "C" void app_main(void)
     case ESP_SLEEP_WAKEUP_TIMER:
         ESP_LOGI(TAG, "Woke up from deep sleep (timer)");
         break;
+    case ESP_SLEEP_WAKEUP_EXT0:
+        ESP_LOGI(TAG, "Woke up from deep sleep (motion detected on GPIO3)");
+        break;
     case ESP_SLEEP_WAKEUP_UNDEFINED:
         ESP_LOGI(TAG, "Fresh boot (not from deep sleep)");
         break;
@@ -273,7 +276,7 @@ extern "C" void app_main(void)
 
     // Number of loop iterations before going to deep sleep
     // Each iteration is ~10 seconds, so 3 iterations = ~30 seconds awake time
-    constexpr int AWAKE_LOOP_ITERATIONS = 6;
+    constexpr int AWAKE_LOOP_ITERATIONS = 2;
 
     if (init_error.empty())
     {
