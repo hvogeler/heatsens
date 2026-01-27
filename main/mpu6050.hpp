@@ -1,9 +1,14 @@
 #include <mutex>
 #include "driver/i2c_master.h"
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 #include "mqtt_logger.hpp"
+
+// Motion interrupt GPIO pin (connected to MPU6050 INT pin)
+#define MPU6050_INT_GPIO GPIO_NUM_3
 
 // MPU6050 Register addresses
 #define MPU6050_REG_WHO_AM_I 0x75
@@ -23,7 +28,9 @@
 #define MPU6050_REG_USER_CTRL 0x6A
 #define MPU6050_REG_MOT_THR 0x1F
 #define MPU6050_REG_MOT_DUR 0x20
+#define MPU6050_REG_MOT_DETECT_STATUS 0x61
 #define MPU6050_REG_MOT_DETECT_CTRL 0x69
+#define MPU6050_REG_LP_ACCEL_ODR 0x1E  // Low Power Accelerometer ODR Control
 
 // MPU6050 WHO_AM_I value
 #define MPU6050_WHO_AM_I_VALUE 0x68
@@ -148,7 +155,22 @@ public:
     // threshold_g: minimum change in any axis to detect rotation (e.g., 0.1g ≈ 6° rotation)
     bool is_rotated(const mpu6050_data* data, float threshold_g = 0.1f);
 
+    // Setup GPIO interrupt for motion detection
+    // This configures GPIO10 to trigger on rising edge when MPU6050 INT goes high
+    esp_err_t setup_motion_interrupt_gpio();
+
+    // Read diagnostic registers (INT_STATUS, MOT_DETECT_STATUS)
+    esp_err_t read_motion_diag(uint8_t* int_status, uint8_t* mot_detect_status);
+
 private:
+    // Task handle for motion handler task
+    TaskHandle_t motion_task_handle = nullptr;
+
+    // Static ISR handler
+    static void IRAM_ATTR gpio_isr_handler(void* arg);
+
+    // Motion handler task
+    static void motion_handler_task(void* arg);
     Mpu6050() : dev_handle(nullptr), accel_scale(MPU6050_ACCEL_SCALE_2G),
                 gyro_scale(MPU6050_GYRO_SCALE_250), prev_accel_magnitude(0.0f),
                 last_motion_time_ms(0), prev_accel_x(0.0f), prev_accel_y(0.0f),

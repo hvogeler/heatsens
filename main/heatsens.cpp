@@ -240,15 +240,20 @@ extern "C" void app_main(void)
             ESP_LOGE(TAG, "Failed to read initial MPU6050 data");
         }
 
-        // Setup motion detection with higher threshold for rotation detection
-        // For 30° rotation, we expect ~0.5g change, so use 0.2g (100mg) threshold
-        // threshold=100 means 200mg, duration=50ms to debounce
-        err = motion_sensor.setup_motion_detection(50, 50);
+        // Setup motion detection with lower threshold for small movement sensitivity
+        // threshold=20 means 40mg (1 LSB = 2mg at 2G range), duration=10ms for quick response
+        err = motion_sensor.setup_motion_detection(3, 3);
         if (err != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to setup motion detection");
         }
-        check_motion_timer.start_periodic(std::chrono::milliseconds(300));
+
+        // Setup GPIO interrupt to detect when MPU6050 INT pin goes high
+        err = motion_sensor.setup_motion_interrupt_gpio();
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to setup motion interrupt GPIO");
+        }
     }
 
     // Log wakeup cause
@@ -268,7 +273,7 @@ extern "C" void app_main(void)
 
     // Number of loop iterations before going to deep sleep
     // Each iteration is ~10 seconds, so 3 iterations = ~30 seconds awake time
-    constexpr int AWAKE_LOOP_ITERATIONS = 5;
+    constexpr int AWAKE_LOOP_ITERATIONS = 6;
 
     if (init_error.empty())
     {
@@ -292,7 +297,7 @@ extern "C" void app_main(void)
 
             ESP_LOGD(TAG, "Free heap: %lu bytes", esp_get_free_heap_size());
 
-            vTaskDelay(pdMS_TO_TICKS(1000));
+            vTaskDelay(pdMS_TO_TICKS(10000));
         }
 
         // Prepare for deep sleep (shutdown MQTT and WiFi)

@@ -243,9 +243,27 @@ esp_err_t Mpu6050::setup_motion_detection(uint8_t threshold, uint8_t duration)
 
     esp_err_t err;
 
-    // Configure interrupt pin
-    // INT_PIN_CFG: Active high, push-pull, held until cleared, cleared on read of INT_STATUS
-    err = i2c.transmit(dev_handle, MPU6050_REG_INT_PIN_CFG, 0x10);
+    // IMPORTANT: Enable the accelerometer high-pass filter (HPF) for motion detection
+    // The motion detection compares the HPF output against the threshold
+    // ACCEL_CONFIG (0x1C): bits 4:3 = AFS_SEL (range), bits 2:0 = ACCEL_HPF
+    // HPF settings: 000=Reset, 001=5Hz, 010=2.5Hz, 011=1.25Hz, 100=0.63Hz, 111=Hold
+    // We use 5Hz cutoff (001) which works well for motion detection
+    // Keep current range (2G = 0x00 in bits 4:3) + HPF 5Hz (0x01 in bits 2:0)
+    err = i2c.transmit(dev_handle, MPU6050_REG_ACCEL_CONFIG, 0x01);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to configure accelerometer HPF");
+        return err;
+    }
+    ESP_LOGI(TAG, "Accelerometer HPF enabled at 5Hz for motion detection");
+
+    // Configure interrupt pin (register 0x37)
+    // Bit 7: INT_LEVEL = 0 (active high)
+    // Bit 6: INT_OPEN = 0 (push-pull output)
+    // Bit 5: LATCH_INT_EN = 1 (interrupt latched until INT_STATUS read)
+    // Bit 4: INT_RD_CLEAR = 0 (INT_STATUS cleared only by reading INT_STATUS)
+    // Value: 0x20
+    err = i2c.transmit(dev_handle, MPU6050_REG_INT_PIN_CFG, 0x20);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to configure interrupt pin");
@@ -270,10 +288,11 @@ esp_err_t Mpu6050::setup_motion_detection(uint8_t threshold, uint8_t duration)
     }
 
     // Configure motion detection control
-    // Bits 7-6: Accel on delay (00 = 1 sample)
-    // Bits 5-4: FF_COUNT (00 = 1 sample)
-    // Bits 3-2: MOT_COUNT (00 = 1 sample)
-    // Setting all to increment by 1 for faster detection
+    // Bits 5:4: ACCEL_ON_DELAY - delay for accelerometer to settle after wake
+    //   00=4ms, 01=5ms, 10=6ms, 11=7ms
+    // Bits 3:2: FF_COUNT - free fall counter decrement
+    // Bits 1:0: MOT_COUNT - motion counter decrement
+    // Use 4ms delay, counter decrement = 1
     err = i2c.transmit(dev_handle, MPU6050_REG_MOT_DETECT_CTRL, 0x00);
     if (err != ESP_OK)
     {
@@ -291,15 +310,16 @@ esp_err_t Mpu6050::setup_motion_detection(uint8_t threshold, uint8_t duration)
     }
 
     // Read back and verify configuration
-    uint8_t verify_thr, verify_dur, verify_int_en;
+    uint8_t verify_accel_cfg, verify_thr, verify_dur, verify_int_en;
+    i2c.receive(dev_handle, MPU6050_REG_ACCEL_CONFIG, &verify_accel_cfg, 1);
     i2c.receive(dev_handle, MPU6050_REG_MOT_THR, &verify_thr, 1);
     i2c.receive(dev_handle, MPU6050_REG_MOT_DUR, &verify_dur, 1);
     i2c.receive(dev_handle, MPU6050_REG_INT_ENABLE, &verify_int_en, 1);
 
     ESP_LOGI(TAG, "Motion detection configured: threshold=%d (%.1fmg), duration=%dms",
              threshold, threshold * 2.0f, duration);
-    ESP_LOGI(TAG, "Verified - THR: 0x%02x, DUR: 0x%02x, INT_EN: 0x%02x",
-             verify_thr, verify_dur, verify_int_en);
+    ESP_LOGI(TAG, "Verified - ACCEL_CFG: 0x%02x, THR: 0x%02x, DUR: 0x%02x, INT_EN: 0x%02x",
+             verify_accel_cfg, verify_thr, verify_dur, verify_int_en);
     logger.info(TAG, "Motion detection configured: threshold=%d, duration=%dms",
                 threshold, duration);
 
@@ -329,7 +349,7 @@ esp_err_t Mpu6050::check_motion_interrupt(bool *motion_detected)
     *motion_detected = (int_status & 0x40) != 0;
 
     // Log interrupt status for debugging
-    ESP_LOGD(TAG, "INT_STATUS: 0x%02x, Motion bit: %d", int_status, *motion_detected);
+    ESP_LOGD(TAG, "++++++++ INT_STATUS: 0x%02x, Motion bit: %d +++++++++", int_status, *motion_detected);
 
     if (*motion_detected)
     {
@@ -417,4 +437,141 @@ bool Mpu6050::is_rotated(const mpu6050_data *data, float threshold_g)
     }
 
     return rotated;
+}
+
+void IRAM_ATTR Mpu6050::gpio_isr_handler(void *arg)
+{
+    Mpu6050 *instance = static_cast<Mpu6050 *>(arg);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    // NOTE: Cannot call ESP_LOGI or any FreeRTOS functions from ISR except *FromISR variants
+
+    // Notify the motion handler task
+    if (instance->motion_task_handle != nullptr)
+    {
+        vTaskNotifyGiveFromISR(instance->motion_task_handle, &xHigherPriorityTaskWoken);
+    }
+
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void Mpu6050::motion_handler_task(void *arg)
+{
+    Mpu6050 *instance = static_cast<Mpu6050 *>(arg);
+
+    while (true)
+    {
+        // Wait for notification from ISR
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        ESP_LOGD(instance->TAG, "+++++++++ Motion detected via GPIO interrupt!");
+
+        // Clear the interrupt by reading INT_STATUS register
+        bool motion_detected;
+        instance->check_motion_interrupt(&motion_detected);
+    }
+}
+
+esp_err_t Mpu6050::read_motion_diag(uint8_t *int_status, uint8_t *mot_detect_status)
+{
+    if (!is_initialized)
+        return ESP_ERR_INVALID_STATE;
+
+    auto &i2c = I2c::getInstance();
+    std::lock_guard<std::mutex> lock(i2c.getMutex());
+
+    esp_err_t err = i2c.receive(dev_handle, MPU6050_REG_INT_STATUS, int_status, 1);
+    if (err != ESP_OK)
+        return err;
+
+    return i2c.receive(dev_handle, MPU6050_REG_MOT_DETECT_STATUS, mot_detect_status, 1);
+}
+
+// Diagnostic task to poll INT_STATUS, MOT_DETECT_STATUS and GPIO level
+static void motion_diagnostic_task(void *arg)
+{
+    Mpu6050 *instance = static_cast<Mpu6050 *>(arg);
+
+    while (true)
+    {
+        int gpio_level = gpio_get_level(MPU6050_INT_GPIO);
+
+        uint8_t int_status = 0;
+        uint8_t mot_detect_status = 0;
+        instance->read_motion_diag(&int_status, &mot_detect_status);
+
+        ESP_LOGI("MPU_DIAG", "GPIO%d=%d, INT_STATUS=0x%02x (mot=%d), MOT_DETECT_STATUS=0x%02x",
+                 MPU6050_INT_GPIO, gpio_level, int_status, (int_status >> 6) & 1, mot_detect_status);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+esp_err_t Mpu6050::setup_motion_interrupt_gpio()
+{
+    esp_err_t err;
+
+    // Configure GPIO for interrupt
+    gpio_config_t io_conf = {};
+    io_conf.intr_type = GPIO_INTR_POSEDGE; // Rising edge (INT goes high on motion)
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = (1ULL << MPU6050_INT_GPIO);
+    io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE; // Pull down when idle
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+
+    err = gpio_config(&io_conf);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to configure GPIO %d: %s", MPU6050_INT_GPIO, esp_err_to_name(err));
+        return err;
+    }
+
+    // Clear any pending interrupt before setting up ISR
+    bool dummy;
+    check_motion_interrupt(&dummy);
+    ESP_LOGI(TAG, "Initial GPIO%d level: %d (cleared pending interrupt)",
+             MPU6050_INT_GPIO, gpio_get_level(MPU6050_INT_GPIO));
+
+    // Create motion handler task
+    BaseType_t task_created = xTaskCreate(
+        motion_handler_task,
+        "motion_handler",
+        2048,
+        this,
+        5, // Priority
+        &motion_task_handle);
+
+    if (task_created != pdPASS)
+    {
+        ESP_LOGE(TAG, "Failed to create motion handler task");
+        return ESP_FAIL;
+    }
+
+    // Create diagnostic task to poll motion status
+    xTaskCreate(
+        motion_diagnostic_task,
+        "motion_diag",
+        2048,
+        this,
+        3, // Lower priority
+        nullptr);
+
+    // Install GPIO ISR service
+    err = gpio_install_isr_service(0);
+    if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) // ESP_ERR_INVALID_STATE means already installed
+    {
+        ESP_LOGE(TAG, "Failed to install GPIO ISR service: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    // Add ISR handler for the motion interrupt GPIO
+    err = gpio_isr_handler_add(MPU6050_INT_GPIO, gpio_isr_handler, this);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to add GPIO ISR handler: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    ESP_LOGI(TAG, "Motion interrupt GPIO %d configured successfully", MPU6050_INT_GPIO);
+    return ESP_OK;
 }
