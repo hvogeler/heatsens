@@ -2,7 +2,7 @@
 dependencies:
   ## Required IDF version
   idf:
-    version: '>=5.5.1'
+    version: ">=5.5.1"
   # # Put list of dependencies here
   # # For components maintained by Espressif:
   # component: "~1.0.0"
@@ -30,3 +30,17 @@ dependencies:
     git: https://github.com/hiruna/esp-idf-aw9364.git
     version: main
   espressif/button: ^4.1.4
+  hvo/i2c:
+    git: https://github.com/hvogeler/esp-components.git
+    path: i2c
+    version: "1.0.9"
+  hvo/bmp280:
+    git: https://github.com/hvogeler/esp-components.git
+    path: bmp280
+    version: "1.0.9"
+  hvo/tdisplays3:
+    git: https://github.com/hvogeler/esp-components.git
+    path: tdisplays3
+    version: "1.0.9"
+  # tdisplays3:
+  #   path: /Users/hvo/Esp32/esp-components/tdisplays3

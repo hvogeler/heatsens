@@ -1,12 +1,10 @@
 idf_component_register(SRCS
       "heatsens.cpp"
       "temp_model.cpp"
-      "bmp280.cpp"
       "mpu6050.cpp"
       "mqtt.cpp"
       "nvs.cpp"
       "wifi.cpp"
-      "i2c.cpp"
       "mqtt_logger.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"

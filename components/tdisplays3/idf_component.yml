@@ -1,5 +1,0 @@
-## IDF Component Manager Manifest File
-dependencies:
-  hiruna/esp-idf-aw9364:
-     git: https://github.com/hiruna/esp-idf-aw9364.git
-     version: main
