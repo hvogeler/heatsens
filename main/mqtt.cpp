@@ -90,9 +90,32 @@ esp_err_t Mqtt::stop()
         ESP_LOGW(TAG, "MQTT client not initialized, nothing to stop");
         return ESP_OK;
     }
-    ESP_LOGI(TAG, "Stopping MQTT client");
+
+    ESP_LOGI(TAG, "Stopping MQTT client for deep sleep...");
+
+    // Set shutdown flag to prevent reconnection attempts
+    is_shutting_down_ = true;
     is_mqtt_connected = false;
-    return esp_mqtt_client_stop(mqtt_client);
+
+    // Disable auto reconnect before stopping
+    esp_mqtt_client_disconnect(mqtt_client);
+
+    esp_err_t ret = esp_mqtt_client_stop(mqtt_client);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGW(TAG, "esp_mqtt_client_stop failed: %s", esp_err_to_name(ret));
+    }
+
+    // Destroy the client to free resources
+    ret = esp_mqtt_client_destroy(mqtt_client);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGW(TAG, "esp_mqtt_client_destroy failed: %s", esp_err_to_name(ret));
+    }
+
+    mqtt_client = nullptr;
+    ESP_LOGI(TAG, "MQTT client stopped and destroyed");
+    return ESP_OK;
 }
 
 static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
@@ -113,10 +136,22 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         break;
     }
     case MQTT_EVENT_DISCONNECTED:
+    {
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-        ESP_LOGI(TAG, "Attempting to reconnect to MQTT broker...");
-        esp_mqtt_client_reconnect(client);
+        auto &mqtt = Mqtt::getInstance();
+        mqtt.set_is_mqtt_connected(false);
+        // Don't reconnect if we're shutting down for deep sleep
+        if (!mqtt.is_shutting_down())
+        {
+            ESP_LOGI(TAG, "Attempting to reconnect to MQTT broker...");
+            esp_mqtt_client_reconnect(client);
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Not reconnecting - shutting down for deep sleep");
+        }
         break;
+    }
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED");
         break;

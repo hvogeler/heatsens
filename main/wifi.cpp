@@ -17,6 +17,14 @@ void Wifi::wifi_event_handler(void *arg, esp_event_base_t event_base,
 {
     auto &wifi = Wifi::getInstance();
     std::lock_guard<std::mutex> lock_wifi(wifi.getMutex());
+
+    // Don't process events during shutdown
+    if (wifi.is_shutting_down())
+    {
+        ESP_LOGI(TAG, "Ignoring WiFi event during shutdown");
+        return;
+    }
+
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
         esp_wifi_connect();
@@ -34,7 +42,7 @@ void Wifi::wifi_event_handler(void *arg, esp_event_base_t event_base,
             xEventGroupSetBits(wifi.s_wifi_event_group_, WIFI_FAIL_BIT);
         }
         ESP_LOGI(TAG, "connect to the AP fail");
-        wifi.is_connected = true;
+        wifi.is_connected = false;
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
@@ -65,23 +73,21 @@ esp_err_t Wifi::wifi_connect(void)
 
     // Initialize WiFi
     ESP_ERROR_CHECK(esp_netif_init());
-    esp_netif_create_default_wifi_sta();
+    sta_netif_ = esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    esp_event_handler_instance_t instance_any_id;
-    esp_event_handler_instance_t instance_got_ip;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
                                                         &wifi_event_handler,
                                                         NULL,
-                                                        &instance_any_id));
+                                                        &instance_any_id_));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
                                                         IP_EVENT_STA_GOT_IP,
                                                         &wifi_event_handler,
                                                         NULL,
-                                                        &instance_got_ip));
+                                                        &instance_got_ip_));
 
     wifi_config_t wifi_config = {};
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
@@ -161,5 +167,68 @@ esp_err_t Wifi::time_sync(void)
         return ESP_FAIL;
     }
 
+    return ESP_OK;
+}
+
+esp_err_t Wifi::wifi_disconnect(void)
+{
+    ESP_LOGI(TAG, "Disconnecting WiFi for deep sleep...");
+
+    // Set shutdown flag to prevent reconnection attempts
+    is_shutting_down_ = true;
+    is_connected = false;
+
+    // Stop SNTP if it was running
+    if (esp_sntp_enabled())
+    {
+        esp_sntp_stop();
+    }
+
+    // Unregister event handlers
+    if (instance_any_id_)
+    {
+        esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id_);
+        instance_any_id_ = nullptr;
+    }
+    if (instance_got_ip_)
+    {
+        esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip_);
+        instance_got_ip_ = nullptr;
+    }
+
+    // Disconnect and stop WiFi
+    esp_err_t ret = esp_wifi_disconnect();
+    if (ret != ESP_OK && ret != ESP_ERR_WIFI_NOT_STARTED)
+    {
+        ESP_LOGW(TAG, "esp_wifi_disconnect failed: %s", esp_err_to_name(ret));
+    }
+
+    ret = esp_wifi_stop();
+    if (ret != ESP_OK && ret != ESP_ERR_WIFI_NOT_INIT)
+    {
+        ESP_LOGW(TAG, "esp_wifi_stop failed: %s", esp_err_to_name(ret));
+    }
+
+    ret = esp_wifi_deinit();
+    if (ret != ESP_OK && ret != ESP_ERR_WIFI_NOT_INIT)
+    {
+        ESP_LOGW(TAG, "esp_wifi_deinit failed: %s", esp_err_to_name(ret));
+    }
+
+    // Destroy the network interface
+    if (sta_netif_)
+    {
+        esp_netif_destroy(sta_netif_);
+        sta_netif_ = nullptr;
+    }
+
+    // Delete event group
+    if (s_wifi_event_group_)
+    {
+        vEventGroupDelete(s_wifi_event_group_);
+        s_wifi_event_group_ = nullptr;
+    }
+
+    ESP_LOGI(TAG, "WiFi disconnected and deinitialized");
     return ESP_OK;
 }

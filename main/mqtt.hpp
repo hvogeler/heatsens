@@ -29,6 +29,7 @@ private:
 
     esp_mqtt_connect_return_code_t connect_return_code;
     bool is_mqtt_connected;
+    bool is_shutting_down_;
 
     std::string mqtt_broker_;
     std::string mqtt_user_;
@@ -103,9 +104,12 @@ public:
     void subscribe();
     esp_err_t stop();
 
+    bool is_shutting_down() const { return is_shutting_down_; }
+    void set_shutting_down(bool v) { is_shutting_down_ = v; }
+
 private:
     // Private constructor
-    Mqtt() : connect_return_code(MQTT_CONNECTION_ACCEPTED), is_mqtt_connected(false)
+    Mqtt() : connect_return_code(MQTT_CONNECTION_ACCEPTED), is_mqtt_connected(false), is_shutting_down_(false)
     {
         current_temp_topic = CONFIG_HEATSENS_CURRENT_TEMP_TOPIC;
         current_temp_topic += CONFIG_HEATSENS_DEVICE_ID;

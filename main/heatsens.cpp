@@ -15,6 +15,8 @@
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
 #include "webprov.hpp"
+#include "deep_sleep.hpp"
+#include "esp_sleep.h"
 
 #define TAG "heatsens"
 
@@ -249,30 +251,64 @@ extern "C" void app_main(void)
         check_motion_timer.start_periodic(std::chrono::milliseconds(300));
     }
 
-    bool is_first_iter = true;
-    while (1)
+    // Log wakeup cause
+    esp_sleep_wakeup_cause_t wakeup_cause = esp_sleep_get_wakeup_cause();
+    switch (wakeup_cause)
     {
-        vTaskDelay(pdMS_TO_TICKS(10000)); // Check every 1 second
+    case ESP_SLEEP_WAKEUP_TIMER:
+        ESP_LOGI(TAG, "Woke up from deep sleep (timer)");
+        break;
+    case ESP_SLEEP_WAKEUP_UNDEFINED:
+        ESP_LOGI(TAG, "Fresh boot (not from deep sleep)");
+        break;
+    default:
+        ESP_LOGI(TAG, "Woke up from deep sleep (cause: %d)", wakeup_cause);
+        break;
+    }
 
-        if (init_error.empty())
+    // Number of loop iterations before going to deep sleep
+    // Each iteration is ~10 seconds, so 3 iterations = ~30 seconds awake time
+    constexpr int AWAKE_LOOP_ITERATIONS = 5;
+
+    if (init_error.empty())
+    {
+        for (int i = 0; i < AWAKE_LOOP_ITERATIONS; i++)
         {
+            ESP_LOGI(TAG, "Awake iteration %d/%d", i + 1, AWAKE_LOOP_ITERATIONS);
+
+            // Read sensor and update model
+            TempModel::update_cur_temp_cb();
+
             std::string json_data;
             {
                 std::lock_guard<std::mutex> lock_temp_model(temp_model.getMutex());
                 json_data = temp_model.to_json();
-                ESP_LOGD(TAG, "\n%s\n", json_data.c_str());
-                ;
+                ESP_LOGI(TAG, "Publishing: %s", json_data.c_str());
             }
             {
                 std::lock_guard<std::mutex> lock_mqtt(mqtt.getMutex());
                 mqtt.publish(json_data);
             }
+
+            ESP_LOGD(TAG, "Free heap: %lu bytes", esp_get_free_heap_size());
+
+            vTaskDelay(pdMS_TO_TICKS(1000));
         }
 
-        // heap_trace_dump();
-        ESP_LOGD(TAG, "Free heap: %lu bytes", esp_get_free_heap_size());
-        // stack size dump
-        BaseType_t remaining_stack = uxTaskGetStackHighWaterMark(NULL);
-        ESP_LOGD(TAG, "Free stack: %lu bytes", remaining_stack * sizeof(StackType_t));
+        // Prepare for deep sleep (shutdown MQTT and WiFi)
+        deep_sleep_prepare();
+
+        // Enter deep sleep
+        deep_sleep_enter();
+        // This function does not return - device resets on wakeup
+    }
+    else
+    {
+        // If there was an init error, don't sleep - keep the error displayed
+        ESP_LOGE(TAG, "Init error occurred, not entering deep sleep");
+        while (1)
+        {
+            vTaskDelay(pdMS_TO_TICKS(10000));
+        }
     }
 }
