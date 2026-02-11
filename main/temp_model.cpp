@@ -42,21 +42,21 @@ void TempModel::init()
     ret = nvs_config.read("night_tgt_temp", night_temp_stored);
     if (ret == ESP_OK)
     {
-        night_tgt_temp = night_temp_stored / 10.0;
+        night_tgt_temp_ = night_temp_stored / 10.0;
     }
 
     int night_start_stored;
     ret = nvs_config.read("night_start", night_start_stored);
     if (ret == ESP_OK)
     {
-        night_start_time = night_start_stored;
+        night_start_time_ = night_start_stored;
     }
 
     int night_end_stored;
     ret = nvs_config.read("night_end", night_end_stored);
     if (ret == ESP_OK)
     {
-        night_end_time = night_end_stored;
+        night_end_time_ = night_end_stored;
     }
 
     start_update_cur_temp_timer(CONFIG_HEATSENS_TEMP_READ_INTERVAL_SHORT);
@@ -77,7 +77,7 @@ void TempModel::set_tgt_temp(double temp)
 
 void TempModel::set_night_tgt_temp(std::optional<double> temp)
 {
-    night_tgt_temp = temp;
+    night_tgt_temp_ = temp;
 
     Nvs nvs;
     esp_err_t ret = nvs.open_namespace("meta");
@@ -103,7 +103,7 @@ void TempModel::set_night_tgt_temp(std::optional<double> temp)
 
 void TempModel::set_night_start_time(std::optional<int> start)
 {
-    night_start_time = start;
+    night_start_time_ = start;
 
     Nvs nvs;
     esp_err_t ret = nvs.open_namespace("meta");
@@ -129,7 +129,7 @@ void TempModel::set_night_start_time(std::optional<int> start)
 
 void TempModel::set_night_end_time(std::optional<int> end)
 {
-    night_end_time = end;
+    night_end_time_ = end;
 
     Nvs nvs;
     esp_err_t ret = nvs.open_namespace("meta");
@@ -157,9 +157,12 @@ void TempModel::set_device_meta(std::string name, int heat_actuator, std::option
 {
     device_name_ = name;
     heat_actuator_ = heat_actuator;
-    night_tgt_temp = night_temp;
-    night_start_time = night_start;
-    night_end_time = night_end;
+    if (night_temp.has_value())
+        night_tgt_temp_ = night_temp;
+    if (night_start.has_value())
+        night_start_time_ = night_start;
+    if (night_end.has_value())
+        night_end_time_ = night_end;
 
     Nvs nvs;
     nvs.open_namespace("meta");
@@ -232,7 +235,7 @@ bool TempModel::get_is_heating_requested()
 double TempModel::get_tgt_temp() const
 {
     // Check if all night variables are set
-    if (!night_tgt_temp.has_value() || !night_start_time.has_value() || !night_end_time.has_value())
+    if (!night_tgt_temp_.has_value() || !night_start_time_.has_value() || !night_end_time_.has_value())
     {
         return tgt_temp_;
     }
@@ -245,8 +248,8 @@ double TempModel::get_tgt_temp() const
     int current_hour = timeinfo.tm_hour;
 
     // Check if we're in night mode
-    int start = night_start_time.value();
-    int end = night_end_time.value();
+    int start = night_start_time_.value();
+    int end = night_end_time_.value();
     bool in_night_mode = false;
 
     if (start == end)
@@ -265,7 +268,7 @@ double TempModel::get_tgt_temp() const
         in_night_mode = (current_hour >= start || current_hour < end);
     }
 
-    return in_night_mode ? night_tgt_temp.value() : tgt_temp_;
+    return in_night_mode ? night_tgt_temp_.value() : tgt_temp_;
 }
 
 // Make sure the esp time is initialized for this function to make sense.
@@ -300,17 +303,17 @@ std::string TempModel::to_json()
     cJSON_AddNumberToObject(doc, "heat_actuator", heat_actuator_);
 
     // Add night mode variables if they are set
-    if (night_tgt_temp.has_value())
+    if (night_tgt_temp_.has_value())
     {
-        cJSON_AddNumberToObject(doc, "night_tgt_temp", night_tgt_temp.value());
+        cJSON_AddNumberToObject(doc, "night_tgt_temp", night_tgt_temp_.value());
     }
-    if (night_start_time.has_value())
+    if (night_start_time_.has_value())
     {
-        cJSON_AddNumberToObject(doc, "night_start_time", night_start_time.value());
+        cJSON_AddNumberToObject(doc, "night_start_time", night_start_time_.value());
     }
-    if (night_end_time.has_value())
+    if (night_end_time_.has_value())
     {
-        cJSON_AddNumberToObject(doc, "night_end_time", night_end_time.value());
+        cJSON_AddNumberToObject(doc, "night_end_time", night_end_time_.value());
     }
 
     char *json_str = cJSON_Print(doc);

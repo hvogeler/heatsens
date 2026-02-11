@@ -22,9 +22,9 @@ private:
     bool is_heating_;
     mutable std::mutex mutex_;
     MqttLogger logger;
-    std::optional<double> night_tgt_temp;
-    std::optional<int> night_start_time; // Start of night period (hour in 24h format, local time)
-    std::optional<int> night_end_time;   // End of night period (hour in 24h format, local time)
+    std::optional<double> night_tgt_temp_;
+    std::optional<int> night_start_time_; // Start of night period (hour in 24h format, local time)
+    std::optional<int> night_end_time_;   // End of night period (hour in 24h format, local time)
     idf::esp_timer::ESPTimer update_cur_temp_timer;
 
 public:
