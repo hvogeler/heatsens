@@ -105,7 +105,7 @@ static void check_motion_cb()
     {
         // For gentle rotation detection, use lower threshold
         // 0.08g ≈ 5° rotation, 0.15g ≈ 10° rotation
-        bool rotated = motion_sensor.is_rotated(&data, 0.08f); // Very sensitive
+        bool rotated = motion_sensor.is_rotated(&data, 0.20f); // Raised threshold for SMD noise
         if (rotated)
         {
             ESP_LOGI(local_tag, "Device rotated! Turning on LCD...");

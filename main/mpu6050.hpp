@@ -99,6 +99,13 @@ class Mpu6050 {
     float prev_accel_z;
     bool has_prev_accel;
 
+    // For multi-sample averaging to reject noise
+    static constexpr int ROTATION_AVG_SAMPLES = 8;
+    float accel_sum_x;
+    float accel_sum_y;
+    float accel_sum_z;
+    int avg_sample_count;
+
     mutable std::mutex mutex_;
     MqttLogger logger;
 
@@ -152,7 +159,9 @@ private:
     Mpu6050() : dev_handle(nullptr), accel_scale(MPU6050_ACCEL_SCALE_2G),
                 gyro_scale(MPU6050_GYRO_SCALE_250), prev_accel_magnitude(0.0f),
                 last_motion_time_ms(0), prev_accel_x(0.0f), prev_accel_y(0.0f),
-                prev_accel_z(0.0f), has_prev_accel(false) {
+                prev_accel_z(0.0f), has_prev_accel(false),
+                accel_sum_x(0.0f), accel_sum_y(0.0f), accel_sum_z(0.0f),
+                avg_sample_count(0) {
         // Don't initialize MPU6050 here - I2C must be set up first
     }
 

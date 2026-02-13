@@ -131,8 +131,8 @@ esp_err_t Mpu6050::init(mpu6050_accel_range accel_range, mpu6050_gyro_range gyro
     }
 
     // Configure DLPF (Digital Low Pass Filter)
-    // CONFIG = 0x00: Accel BW=260Hz, Gyro BW=256Hz
-    err = i2c.transmit(dev_handle, MPU6050_REG_CONFIG, 0x00);
+    // CONFIG = 0x06: Accel BW=5Hz, Gyro BW=5Hz (maximum filtering for noisy SMD setups)
+    err = i2c.transmit(dev_handle, MPU6050_REG_CONFIG, 0x06);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to configure DLPF");
@@ -379,40 +379,60 @@ bool Mpu6050::is_rotated(const mpu6050_data *data, float threshold_g)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    // First call - just store current values
+    // Accumulate samples for averaging to reject noise
+    accel_sum_x += data->accel_x;
+    accel_sum_y += data->accel_y;
+    accel_sum_z += data->accel_z;
+    avg_sample_count++;
+
+    if (avg_sample_count < ROTATION_AVG_SAMPLES)
+    {
+        return false; // Still collecting samples
+    }
+
+    // Calculate averaged values
+    float avg_x = accel_sum_x / avg_sample_count;
+    float avg_y = accel_sum_y / avg_sample_count;
+    float avg_z = accel_sum_z / avg_sample_count;
+
+    // Reset accumulators
+    accel_sum_x = 0.0f;
+    accel_sum_y = 0.0f;
+    accel_sum_z = 0.0f;
+    avg_sample_count = 0;
+
+    // First averaged window - just store as baseline
     if (!has_prev_accel)
     {
-        prev_accel_x = data->accel_x;
-        prev_accel_y = data->accel_y;
-        prev_accel_z = data->accel_z;
+        prev_accel_x = avg_x;
+        prev_accel_y = avg_y;
+        prev_accel_z = avg_z;
         has_prev_accel = true;
         return false;
     }
 
-    // Calculate change in each axis
-    float delta_x = fabsf(data->accel_x - prev_accel_x);
-    float delta_y = fabsf(data->accel_y - prev_accel_y);
-    float delta_z = fabsf(data->accel_z - prev_accel_z);
+    // Compare averaged values to previous averaged baseline
+    float delta_x = fabsf(avg_x - prev_accel_x);
+    float delta_y = fabsf(avg_y - prev_accel_y);
+    float delta_z = fabsf(avg_z - prev_accel_z);
 
-    // Find maximum change across all axes
     float max_delta = delta_x;
     if (delta_y > max_delta)
         max_delta = delta_y;
     if (delta_z > max_delta)
         max_delta = delta_z;
 
-    // Update previous values for next comparison
-    prev_accel_x = data->accel_x;
-    prev_accel_y = data->accel_y;
-    prev_accel_z = data->accel_z;
+    // Update baseline with current average
+    prev_accel_x = avg_x;
+    prev_accel_y = avg_y;
+    prev_accel_z = avg_z;
 
-    // Rotation detected if any axis changed significantly
     bool rotated = (max_delta > threshold_g);
 
     if (rotated)
     {
         last_motion_time_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
-        ESP_LOGD(TAG, "Rotation detected: ΔX=%.3f, ΔY=%.3f, ΔZ=%.3f g",
+        ESP_LOGD(TAG, "Rotation detected (avg'd): ΔX=%.3f, ΔY=%.3f, ΔZ=%.3f g",
                  delta_x, delta_y, delta_z);
     }
 
