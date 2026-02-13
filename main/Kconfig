@@ -65,22 +65,4 @@ menu "HEATSENS"
         help
             Histeresis for toggling heating
         
-    config HEATSENS_TIMEZONE
-        string "Timezone for time stamps"
-        default "CET-1CEST,M3.5.0,M10.5.0/3"
-        help
-            Posix time zone
-
-    config HEATSENS_TIME_SERVER_0
-        string "Time Server 0"
-        default "0.de.pool.ntp.org"
-        help
-            Time Server 0
-
-    config HEATSENS_TIME_SERVER_1
-        string "Time Server 1"
-        default "1.de.pool.ntp.org"
-        help
-            Time Server 1
-
 endmenu
