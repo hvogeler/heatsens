@@ -3,8 +3,6 @@ idf_component_register(SRCS
       "temp_model.cpp"
       "mpu6050.cpp"
       "mqtt.cpp"
-      "nvs.cpp"
-      "wifi.cpp"
       "mqtt_logger.cpp"
       "ui/ui.cpp"
       "ui/field.cpp"
@@ -23,4 +21,6 @@ idf_component_register(SRCS
       json
       button_wrapper
       webprov
+      nvs
+      wifi
     )

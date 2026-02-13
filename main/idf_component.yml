@@ -33,14 +33,22 @@ dependencies:
   hvo/i2c:
     git: https://github.com/hvogeler/esp-components.git
     path: i2c
-    version: "1.0.9"
+    version: "1.0.19"
   hvo/bmp280:
     git: https://github.com/hvogeler/esp-components.git
     path: bmp280
-    version: "1.0.9"
+    version: "1.0.19"
   hvo/tdisplays3:
     git: https://github.com/hvogeler/esp-components.git
     path: tdisplays3
-    version: "1.0.9"
+    version: "1.0.19"
+  hvo/nvs:
+    git: https://github.com/hvogeler/esp-components.git
+    path: nvs
+    version: "1.0.19"
+  hvo/wifi:
+    git: https://github.com/hvogeler/esp-components.git
+    path: wifi
+    version: "1.0.19"
   # tdisplays3:
   #   path: /Users/hvo/Esp32/esp-components/tdisplays3
