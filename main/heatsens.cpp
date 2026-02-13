@@ -171,6 +171,9 @@ extern "C" void app_main(void)
     // lcd_set_brightness_step(31);
     lcd_set_brightness_pct_fade(100, 1000);
 
+    Button force_provisioning_button(GPIO_NUM_0, 0, BUTTON_SINGLE_CLICK, force_provisioning_cb);
+    force_provisioning_button.register_callback(BUTTON_LONG_PRESS_UP, force_provisioning_cb);
+
     auto &wifi = Wifi::getInstance();
     ret = wifi.wifi_connect();
     if (ret != ESP_OK)
@@ -181,7 +184,6 @@ extern "C" void app_main(void)
     auto &mqtt = Mqtt::getInstance();
     auto &temp_model = TempModel::getInstance();
     Button wake_up_button(GPIO_NUM_14, 0, BUTTON_SINGLE_CLICK, wake_up_button_cb);
-    Button force_provisioning_button(GPIO_NUM_0, 0, BUTTON_SINGLE_CLICK, force_provisioning_cb);
 
     if (init_error.empty())
     {
@@ -205,7 +207,6 @@ extern "C" void app_main(void)
         ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         wake_up_button.register_callback(BUTTON_DOUBLE_CLICK, wake_up_button_cb);
         wake_up_button.register_callback(BUTTON_LONG_PRESS_UP, wake_up_button_cb);
-        force_provisioning_button.register_callback(BUTTON_LONG_PRESS_UP, force_provisioning_cb);
     }
     else
     {
