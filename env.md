@@ -4,5 +4,5 @@
 
 # usb
 
-ls /dev/cu\*
-export ESPPORT=/dev/cu.usbmodem1101
+ls /dev/cu*
+export ESPPORT=/dev/cu.usbmodem1301
