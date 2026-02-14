@@ -49,6 +49,6 @@ dependencies:
   hvo/wifi:
     git: https://github.com/hvogeler/esp-components.git
     path: wifi
-    version: "1.0.19"
+    version: "1.0.24"
   # tdisplays3:
   #   path: /Users/hvo/Esp32/esp-components/tdisplays3

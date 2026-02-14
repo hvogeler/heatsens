@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include "mqtt_logger.hpp"
 #include "webprov.hpp"
+#include "nvs.hpp"
 
 #define TAG "heatsens"
 
@@ -175,6 +176,15 @@ extern "C" void app_main(void)
     force_provisioning_button.register_callback(BUTTON_LONG_PRESS_UP, force_provisioning_cb);
 
     auto &wifi = Wifi::getInstance();
+    {
+        Nvs nvs_meta;
+        std::string device_name;
+        if (nvs_meta.open_namespace("meta") == ESP_OK &&
+            nvs_meta.read("device_name", device_name) == ESP_OK)
+        {
+            wifi.set_hostname("heatsens_" + device_name);
+        }
+    }
     ret = wifi.wifi_connect();
     if (ret != ESP_OK)
     {

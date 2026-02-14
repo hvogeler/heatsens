@@ -259,7 +259,7 @@ void Ui::dim_display(LcdState to_state)
     switch (to_state)
     {
     case LcdState::Off:
-        lcd_set_brightness_pct_fade(10, 500);
+        lcd_set_brightness_pct_fade(0, 500);
         lcd_state = LcdState::Off;
         break;
     case LcdState::On:
