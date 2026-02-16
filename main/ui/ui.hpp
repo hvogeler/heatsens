@@ -27,6 +27,7 @@ private:
     lv_obj_t *tgt_temp_;
     lv_obj_t *lbl_heating;
     lv_obj_t *lbl_heating_requested;
+    lv_obj_t *lbl_tgt_arrow;
     lv_obj_t *label_meta;
     std::string ssid;
 

@@ -57,40 +57,44 @@ void Ui::error_screen(std::string msg)
 
 void Ui::show_heating(bool is_show_heating)
 {
-    main_view_ = lv_screen_active();
-
-    // Create label only once on first call
     if (!lbl_heating)
-    {
-        lbl_heating = lv_label_create(main_view_);
-        lv_label_set_text(lbl_heating, "Heating");
-        lv_obj_set_style_pad_right(lbl_heating, 2, LV_PART_MAIN);
-        lv_obj_set_style_pad_top(lbl_heating, 5, LV_PART_MAIN);
-        lv_obj_set_style_text_font(lbl_heating, &lv_font_montserrat_24, LV_PART_MAIN);
-        lv_obj_set_align(lbl_heating, LV_ALIGN_TOP_RIGHT);
-    }
+        return;
 
-    // Only update the color, not recreate the object
-    lv_obj_set_style_text_color(lbl_heating, is_show_heating ? lv_palette_main(LV_PALETTE_DEEP_ORANGE) : lv_palette_darken(LV_PALETTE_GREY, 2), LV_PART_MAIN);
+    if (is_show_heating)
+    {
+        lv_obj_set_style_bg_color(lbl_heating, lv_color_hex(0xe83030), LV_PART_MAIN);
+        lv_obj_set_style_shadow_color(lbl_heating, lv_color_hex(0xe83030), LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(lbl_heating, 10, LV_PART_MAIN);
+        lv_obj_set_style_shadow_spread(lbl_heating, 3, LV_PART_MAIN);
+        lv_obj_set_style_shadow_opa(lbl_heating, LV_OPA_70, LV_PART_MAIN);
+    }
+    else
+    {
+        lv_obj_set_style_bg_color(lbl_heating, lv_color_hex(0x1a1a1a), LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(lbl_heating, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_opa(lbl_heating, LV_OPA_TRANSP, LV_PART_MAIN);
+    }
 }
 
 void Ui::show_heating_requested(bool is_show)
 {
-    main_view_ = lv_screen_active();
-
-    // Create label only once on first call
     if (!lbl_heating_requested)
-    {
-        lbl_heating_requested = lv_label_create(main_view_);
-        lv_label_set_text(lbl_heating_requested, "Heating Requested");
-        lv_obj_set_style_pad_right(lbl_heating_requested, 2, LV_PART_MAIN);
-        lv_obj_set_style_pad_top(lbl_heating_requested, 5, LV_PART_MAIN);
-        lv_obj_set_style_text_font(lbl_heating_requested, &lv_font_montserrat_16, LV_PART_MAIN);
-        lv_obj_align(lbl_heating_requested, LV_ALIGN_TOP_RIGHT, 0, 30);
-    }
+        return;
 
-    // Only update the color, not recreate the object
-    lv_obj_set_style_text_color(lbl_heating_requested, is_show ? lv_palette_lighten(LV_PALETTE_GREY, 3) : lv_palette_darken(LV_PALETTE_GREY, 2), LV_PART_MAIN);
+    if (is_show)
+    {
+        lv_obj_set_style_bg_color(lbl_heating_requested, lv_color_hex(0xdaa520), LV_PART_MAIN);
+        lv_obj_set_style_shadow_color(lbl_heating_requested, lv_color_hex(0xdaa520), LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(lbl_heating_requested, 8, LV_PART_MAIN);
+        lv_obj_set_style_shadow_spread(lbl_heating_requested, 3, LV_PART_MAIN);
+        lv_obj_set_style_shadow_opa(lbl_heating_requested, LV_OPA_70, LV_PART_MAIN);
+    }
+    else
+    {
+        lv_obj_set_style_bg_color(lbl_heating_requested, lv_color_hex(0x1a1a1a), LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(lbl_heating_requested, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_opa(lbl_heating_requested, LV_OPA_TRANSP, LV_PART_MAIN);
+    }
 }
 
 void Ui::main_view()
@@ -101,62 +105,55 @@ void Ui::main_view()
     // Reset all object pointers since lv_obj_clean deleted them
     lbl_heating = nullptr;
     lbl_heating_requested = nullptr;
+    lbl_tgt_arrow = nullptr;
     cur_temp_ = nullptr;
     tgt_temp_ = nullptr;
     label_meta = nullptr;
 
     lv_obj_set_style_bg_color(main_view_, lv_color_black(), LV_PART_MAIN);
-    lv_obj_set_style_pad_all(main_view_, 5, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(main_view_, 0, LV_PART_MAIN);
 
-    // Heating
-    // lv_obj_t *lbl_heating = lv_label_create(main_view_);
-    // lv_label_set_text(lbl_heating, "");
+    // ── Left edge glow bars ──
+    // Heating requested indicator (amber glow when active)
+    lbl_heating_requested = lv_obj_create(main_view_);
+    lv_obj_remove_style_all(lbl_heating_requested);
+    lv_obj_set_size(lbl_heating_requested, 4, 28);
+    lv_obj_set_style_radius(lbl_heating_requested, 2, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(lbl_heating_requested, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(lbl_heating_requested, lv_color_hex(0x1a1a1a), LV_PART_MAIN);
+    lv_obj_set_pos(lbl_heating_requested, 6, 43);
 
-    // lv_obj_set_style_text_font(lbl_heating, &lv_font_montserrat_24, LV_PART_MAIN);
-    // lv_obj_set_style_text_color(lbl_heating, lv_palette_main(LV_PALETTE_GREY), LV_PART_MAIN);
-    // // lv_obj_set_pos(lbl_heating, 0, 0);
-    // lv_obj_set_align(lbl_heating, LV_ALIGN_TOP_RIGHT);
+    // Actuator open / heating indicator (red glow when active)
+    lbl_heating = lv_obj_create(main_view_);
+    lv_obj_remove_style_all(lbl_heating);
+    lv_obj_set_size(lbl_heating, 4, 28);
+    lv_obj_set_style_radius(lbl_heating, 2, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(lbl_heating, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(lbl_heating, lv_color_hex(0x1a1a1a), LV_PART_MAIN);
+    lv_obj_set_pos(lbl_heating, 6, 77);
 
-    // Create current temp
-    lv_obj_t *lbl_cur_temp = lv_label_create(main_view_);
-    lv_label_set_text(lbl_cur_temp, "Current Temp °C");
-
-    lv_obj_set_width(lbl_cur_temp, lv_pct(100));
-    lv_obj_set_style_text_font(lbl_cur_temp, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_style_text_color(lbl_cur_temp, lv_palette_darken(LV_PALETTE_LIGHT_GREEN, 1), LV_PART_MAIN);
-    lv_obj_set_pos(lbl_cur_temp, 0, 0);
-
+    // ── Current temperature (large, white, centered) ──
     cur_temp_ = lv_label_create(main_view_);
-    char temp_str[32];
-    snprintf(temp_str, sizeof(temp_str), "%s", "--.-");
-    lv_label_set_text_fmt(cur_temp_, "%s", temp_str);
-    lv_obj_set_width(cur_temp_, lv_pct(100));
+    lv_label_set_text(cur_temp_, "--.-");
     lv_obj_set_style_text_font(cur_temp_, &Rubik_Medium_48, LV_PART_MAIN);
-    lv_obj_set_style_text_color(cur_temp_, lv_palette_main(LV_PALETTE_LIGHT_GREEN), LV_PART_MAIN);
+    lv_obj_set_style_text_color(cur_temp_, lv_color_white(), LV_PART_MAIN);
+    lv_obj_align(cur_temp_, LV_ALIGN_CENTER, 10, -28);
 
-    lv_obj_align_to(cur_temp_, lbl_cur_temp, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 3);
-
-    // Create target temp
-    lv_obj_t *lbl_tgt_temp = lv_label_create(main_view_);
-    lv_label_set_text(lbl_tgt_temp, "Target Temp °C");
-    lv_obj_set_width(lbl_tgt_temp, lv_pct(100));
-    lv_obj_set_style_text_font(lbl_tgt_temp, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_style_text_color(lbl_tgt_temp, lv_palette_darken(LV_PALETTE_LIGHT_GREEN, 1), LV_PART_MAIN);
-    lv_obj_set_style_text_align(lbl_tgt_temp, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
-    lv_obj_set_pos(lbl_tgt_temp, 0, 0);
-
-    lv_obj_align_to(lbl_tgt_temp, cur_temp_, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
-
+    // ── Target temperature (smaller, teal, with arrow prefix) ──
     tgt_temp_ = lv_label_create(main_view_);
-    snprintf(temp_str, sizeof(temp_str), "%s", "--.-");
-    lv_label_set_text_fmt(tgt_temp_, "%s", temp_str);
-    lv_obj_set_width(tgt_temp_, lv_pct(100));
-    lv_obj_set_style_text_font(tgt_temp_, &Rubik_Medium_48, LV_PART_MAIN);
-    lv_obj_set_style_text_color(tgt_temp_, lv_palette_main(LV_PALETTE_LIGHT_GREEN), LV_PART_MAIN);
-    lv_obj_set_style_text_align(tgt_temp_, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
+    lv_label_set_text(tgt_temp_, "--.-");
+    lv_obj_set_style_text_font(tgt_temp_, &Rubik_Regular_36, LV_PART_MAIN);
+    lv_obj_set_style_text_color(tgt_temp_, lv_color_hex(0x4ecdc4), LV_PART_MAIN);
+    lv_obj_align(tgt_temp_, LV_ALIGN_CENTER, 10, 22);
 
-    lv_obj_align_to(tgt_temp_, lbl_tgt_temp, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 3);
+    // Arrow prefix for target temp
+    lbl_tgt_arrow = lv_label_create(main_view_);
+    lv_label_set_text(lbl_tgt_arrow, "\xEF\x81\xA8\xEF\x81\xA8\xEF\x81\x94");
+    lv_obj_set_style_text_font(lbl_tgt_arrow, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lbl_tgt_arrow, lv_color_hex(0x669f99), LV_PART_MAIN);
+    lv_obj_align_to(lbl_tgt_arrow, tgt_temp_, LV_ALIGN_OUT_LEFT_MID, -4, 0);
 
+    // ── Meta info (bottom right) ──
     label_meta = lv_label_create(main_view_);
     lv_label_set_text_fmt(label_meta, "v%s %s-%s-%d",
                           CONFIG_APP_PROJECT_VER,
@@ -164,8 +161,8 @@ void Ui::main_view()
                           "room",
                           0);
     lv_obj_set_style_text_font(label_meta, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label_meta, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_PART_MAIN);
-    lv_obj_align(label_meta, LV_ALIGN_BOTTOM_LEFT, 0, -8);
+    lv_obj_set_style_text_color(label_meta, lv_color_hex(0xaaaaaa), LV_PART_MAIN);
+    lv_obj_align(label_meta, LV_ALIGN_BOTTOM_RIGHT, -8, -4);
 
     xTaskCreatePinnedToCore(update_task, "update_task", 4096 * 2, NULL, 0, NULL, 1);
 }
@@ -234,15 +231,20 @@ void Ui::update_ui()
 void Ui::set_cur_temp(double val)
 {
     char temp_str[32];
-    snprintf(temp_str, sizeof(temp_str), "%.1f", val);
+    snprintf(temp_str, sizeof(temp_str), "%.1f°", val);
     lv_label_set_text_fmt(cur_temp_, "%s", temp_str);
 }
 
 void Ui::set_tgt_temp(double val)
 {
     char temp_str[32];
-    snprintf(temp_str, sizeof(temp_str), "%.1f", val);
+    snprintf(temp_str, sizeof(temp_str), "%.1f°", val);
     lv_label_set_text_fmt(tgt_temp_, "%s", temp_str);
+    // Re-align arrow to track label width changes
+    if (lbl_tgt_arrow)
+    {
+        lv_obj_align_to(lbl_tgt_arrow, tgt_temp_, LV_ALIGN_OUT_LEFT_MID, -4, 0);
+    }
 }
 
 void Ui::update_task(void *pvParam)
