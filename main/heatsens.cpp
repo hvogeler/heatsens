@@ -118,7 +118,7 @@ static void check_motion_cb()
             auto &ui = Ui::getInstance();
             std::lock_guard<std::mutex> lock_ui(ui.getMutex());
             ui.dim_display(LcdState::On);
-            ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_SHORT);
+            ui.start_dim_on_timer(CONFIG_HEATSENS_LCD_ON_INTERVAL_LONG);
         }
     }
 }
