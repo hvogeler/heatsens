@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HeatSens UI Mockups - LilyGo T-Display-S3 (320x170)</title>
+<style>
+  body {
+    background: #1a1a2e;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 50px;
+  }
+  h1 { color: #fff; margin-bottom: 0; }
+  h2 { color: #aaa; font-weight: 400; margin-top: 5px; }
+  .mockup-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .mockup-label {
+    font-size: 18px;
+    color: #ccc;
+    font-weight: 600;
+  }
+  .mockup-desc {
+    font-size: 14px;
+    color: #888;
+    max-width: 640px;
+    text-align: center;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .screen {
+    width: 320px;
+    height: 170px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #333;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .mockup-pair {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+  }
+  .scale-label {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .screen.x2 {
+    width: 640px;
+    height: 340px;
+  }
+
+  /* ============================================================
+     Shared state legend
+     ============================================================ */
+  .state-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+  }
+  .state-legend .swatch {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .state-legend span {
+    font-size: 12px;
+    color: #888;
+  }
+
+  /* ============================================================
+     OPTION A: Split Panel
+     - Left half: current temp (large, warm white)
+     - Right half: target temp (cyan/teal, slightly smaller)
+     - Top status strip: idle=dark, requested=amber, heating=red glow
+     - Temps distinguishable by color + size + position
+     ============================================================ */
+  .optA .status-strip {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    display: flex;
+  }
+  .optA .strip-requested {
+    flex: 1;
+    background: #b8860b;
+    box-shadow: 0 0 6px #b8860b88;
+  }
+  .optA .strip-heating {
+    flex: 1;
+    background: #e83030;
+    box-shadow: 0 0 8px #e8303088;
+  }
+  .optA .strip-off {
+    flex: 1;
+    background: #1a1a1a;
+  }
+  .optA .panels {
+    position: absolute;
+    top: 4px; bottom: 22px; left: 0; right: 0;
+    display: flex;
+  }
+  .optA .panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+  }
+  .optA .panel-left {
+    border-right: 1px solid #222;
+  }
+  .optA .temp-value {
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .optA .cur-temp {
+    font-size: 48px;
+    color: #f0f0f0;
+  }
+  .optA .tgt-temp {
+    font-size: 38px;
+    color: #4ecdc4;
+  }
+  .optA .temp-unit {
+    font-family: 'Arial', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .optA .cur-unit { color: #888; }
+  .optA .tgt-unit { color: #2a8a84; }
+  .optA .panel-icon {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  /* Two small status dots in the divider area */
+  .optA .status-dots {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 2;
+  }
+  .optA .sdot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .optA .sdot.req-on  { background: #daa520; box-shadow: 0 0 6px #daa520; }
+  .optA .sdot.req-off { background: #2a2a2a; }
+  .optA .sdot.heat-on  { background: #e83030; box-shadow: 0 0 8px #e83030; }
+  .optA .sdot.heat-off { background: #2a2a2a; }
+
+  .optA .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    border-top: 1px solid #1a1a1a;
+  }
+  .optA .version {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    color: #444;
+  }
+  .optA .legend {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .optA .legend-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .optA .legend-label {
+    font-family: 'Arial', sans-serif;
+    font-size: 8px;
+    color: #444;
+  }
+
+  /* ============================================================
+     OPTION B: Centered Stack with Edge Indicators
+     - Current temp: very large, center-top, bright white
+     - Target temp: below, smaller, prefixed with a right-arrow,
+       dimmed cyan so it reads as "heading towards"
+     - Left edge: two vertical indicator bars (requested + heating)
+     - Clean, minimal, inspired by heatctrl Option D glow bars
+     ============================================================ */
+  .optB .edge-indicators {
+    position: absolute;
+    top: 12px; bottom: 22px; left: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+  }
+  .optB .ebar {
+    width: 4px;
+    height: 28px;
+    border-radius: 2px;
+  }
+  .optB .ebar.req-on  { background: #daa520; box-shadow: 0 0 8px #daa520, 0 0 3px #daa520; }
+  .optB .ebar.req-off { background: #1a1a1a; }
+  .optB .ebar.heat-on  { background: #e83030; box-shadow: 0 0 10px #e83030, 0 0 4px #e83030; }
+  .optB .ebar.heat-off { background: #1a1a1a; }
+
+  .optB .temps {
+    position: absolute;
+    top: 8px; bottom: 22px; left: 20px; right: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+  }
+  .optB .cur-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .optB .cur-temp {
+    font-family: 'Arial', sans-serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+  }
+  .optB .cur-deg {
+    font-family: 'Arial', sans-serif;
+    font-size: 20px;
+    color: #666;
+    font-weight: 400;
+  }
+  .optB .tgt-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .optB .tgt-arrow {
+    font-family: 'Arial', sans-serif;
+    font-size: 18px;
+    color: #336b66;
+  }
+  .optB .tgt-temp {
+    font-family: 'Arial', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: #4ecdc4;
+    line-height: 1;
+  }
+  .optB .tgt-deg {
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #2a6b65;
+    font-weight: 400;
+  }
+  .optB .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 8px;
+  }
+  .optB .version {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    color: #333;
+  }
+
+  /* ============================================================
+     OPTION C: Comparison Bar with Flanked Temps
+     - Current temp left, target temp right, both large
+     - Horizontal bar between them: gradient fill shows progress
+       from current toward target
+     - Bar glows when heating; amber outline when requested
+     - Both temps are visually "anchored" to their side of the bar
+     - Color coding: white/warm = current, teal = target
+     ============================================================ */
+  .optC .layout {
+    position: absolute;
+    inset: 8px 10px 22px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+  .optC .temps-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 2px;
+  }
+  .optC .cur-block, .optC .tgt-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .optC .cur-block { align-items: flex-start; }
+  .optC .tgt-block { align-items: flex-end; }
+  .optC .temp-label {
+    font-family: 'Arial', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .optC .cur-label { color: #666; }
+  .optC .tgt-label { color: #2a6b65; }
+  .optC .temp-value {
+    font-family: 'Arial', sans-serif;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .optC .cur-temp {
+    font-size: 46px;
+    color: #f0f0f0;
+  }
+  .optC .tgt-temp {
+    font-size: 46px;
+    color: #4ecdc4;
+  }
+  .optC .deg {
+    font-size: 18px;
+    font-weight: 400;
+  }
+  .optC .cur-deg { color: #777; }
+  .optC .tgt-deg { color: #2a8a84; }
+
+  .optC .bar-container {
+    position: relative;
+    height: 10px;
+    background: #111;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #222;
+  }
+  .optC .bar-container.requested {
+    border-color: #b8860b;
+    box-shadow: 0 0 4px #b8860b44;
+  }
+  .optC .bar-container.heating {
+    border-color: #e83030;
+    box-shadow: 0 0 8px #e8303066;
+  }
+  .optC .bar-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    border-radius: 5px;
+  }
+  .optC .bar-fill.idle {
+    background: linear-gradient(to right, #3a3a3a, #555);
+  }
+  .optC .bar-fill.heating {
+    background: linear-gradient(to right, #e83030, #ff6b35);
+    box-shadow: inset 0 0 6px #ff6b3566;
+  }
+  .optC .bar-fill.requested {
+    background: linear-gradient(to right, #8b6914, #daa520);
+  }
+  .optC .bar-marker {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 2px;
+    background: #fff;
+    border-radius: 1px;
+    box-shadow: 0 0 4px #ffffff88;
+  }
+
+  .optC .status-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 2px;
+  }
+  .optC .status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .optC .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .optC .status-dot.req-on  { background: #daa520; box-shadow: 0 0 4px #daa520; }
+  .optC .status-dot.req-off { background: #2a2a2a; }
+  .optC .status-dot.heat-on  { background: #e83030; box-shadow: 0 0 4px #e83030; }
+  .optC .status-dot.heat-off { background: #2a2a2a; }
+  .optC .status-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    color: #555;
+  }
+
+  .optC .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 10px;
+  }
+  .optC .version {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<h1>HeatSens UI Mockups</h1>
+<h2>LilyGo T-Display-S3 &mdash; 320 &times; 170 px</h2>
+<p style="color:#777; font-size:13px;">Left = true 1:1 pixel size &nbsp;|&nbsp; Right = 2&times; zoom for detail</p>
+<p style="color:#666; font-size:12px; max-width:600px; text-align:center; line-height:1.6;">
+  Each design shows the state: current temp 21.3&deg;C, target 22.0&deg;C,
+  heating requested = ON, actuator open (heating) = ON.
+  Status indicators use <span style="color:#daa520;">amber</span> = requested,
+  <span style="color:#e83030;">red</span> = actively heating.
+</p>
+
+<!-- ==================== OPTION A: Split Panel ==================== -->
+<div class="mockup-section">
+  <div class="mockup-label">Option A: Split Panel</div>
+  <div class="mockup-desc">
+    Screen divided in two halves. Left: current temperature in large warm white &mdash;
+    the "hero" number you see first. Right: target temperature in teal/cyan &mdash;
+    clearly a different quantity. Two small status dots sit on the center divider:
+    amber = heating requested, red = actuator open. No text labels needed &mdash;
+    color, size, and position create the hierarchy.
+  </div>
+  <div class="mockup-pair">
+    <!-- 1:1 -->
+    <div>
+      <div class="screen optA">
+        <div class="status-strip">
+          <div class="strip-requested"></div>
+          <div class="strip-heating"></div>
+        </div>
+        <div class="panels">
+          <div class="panel panel-left">
+            <span class="temp-unit cur-unit">CURRENT &deg;C</span>
+            <span class="temp-value cur-temp">21.3</span>
+          </div>
+          <div class="panel">
+            <span class="temp-unit tgt-unit">TARGET &deg;C</span>
+            <span class="temp-value tgt-temp">22.0</span>
+          </div>
+        </div>
+        <div class="status-dots">
+          <div class="sdot req-on"></div>
+          <div class="sdot heat-on"></div>
+        </div>
+        <div class="footer">
+          <span class="version">v1.3.2a hs-office-3</span>
+          <div class="legend">
+            <div class="legend-dot" style="background:#daa520;"></div>
+            <span class="legend-label">REQ</span>
+            <div class="legend-dot" style="background:#e83030;"></div>
+            <span class="legend-label">HEAT</span>
+          </div>
+        </div>
+      </div>
+      <div class="scale-label">1:1 (320&times;170)</div>
+    </div>
+    <!-- 2x -->
+    <div>
+      <div class="screen optA x2">
+        <div class="status-strip" style="height:8px;">
+          <div class="strip-requested"></div>
+          <div class="strip-heating"></div>
+        </div>
+        <div class="panels" style="top:8px;bottom:44px;">
+          <div class="panel panel-left">
+            <span class="temp-unit cur-unit" style="font-size:22px;">CURRENT &deg;C</span>
+            <span class="temp-value cur-temp" style="font-size:96px;">21.3</span>
+          </div>
+          <div class="panel">
+            <span class="temp-unit tgt-unit" style="font-size:22px;">TARGET &deg;C</span>
+            <span class="temp-value tgt-temp" style="font-size:76px;">22.0</span>
+          </div>
+        </div>
+        <div class="status-dots" style="gap:16px;">
+          <div class="sdot req-on" style="width:16px;height:16px;"></div>
+          <div class="sdot heat-on" style="width:16px;height:16px;"></div>
+        </div>
+        <div class="footer" style="height:44px;padding:0 16px;">
+          <span class="version" style="font-size:18px;">v1.3.2a hs-office-3</span>
+          <div class="legend" style="gap:12px;">
+            <div class="legend-dot" style="background:#daa520;width:10px;height:10px;"></div>
+            <span class="legend-label" style="font-size:16px;">REQ</span>
+            <div class="legend-dot" style="background:#e83030;width:10px;height:10px;"></div>
+            <span class="legend-label" style="font-size:16px;">HEAT</span>
+          </div>
+        </div>
+      </div>
+      <div class="scale-label">2&times; zoom</div>
+    </div>
+  </div>
+
+  <!-- variant: idle state -->
+  <div style="margin-top:12px;">
+    <div class="mockup-label" style="font-size:14px; color:#777;">Option A &mdash; Idle state (not heating)</div>
+    <div class="screen optA" style="margin-top:6px;">
+      <div class="status-strip">
+        <div class="strip-off"></div>
+        <div class="strip-off"></div>
+      </div>
+      <div class="panels">
+        <div class="panel panel-left">
+          <span class="temp-unit cur-unit">CURRENT &deg;C</span>
+          <span class="temp-value cur-temp">22.1</span>
+        </div>
+        <div class="panel">
+          <span class="temp-unit tgt-unit">TARGET &deg;C</span>
+          <span class="temp-value tgt-temp">22.0</span>
+        </div>
+      </div>
+      <div class="status-dots">
+        <div class="sdot req-off"></div>
+        <div class="sdot heat-off"></div>
+      </div>
+      <div class="footer">
+        <span class="version">v1.3.2a hs-office-3</span>
+        <div class="legend">
+          <div class="legend-dot" style="background:#2a2a2a;"></div>
+          <span class="legend-label">REQ</span>
+          <div class="legend-dot" style="background:#2a2a2a;"></div>
+          <span class="legend-label">HEAT</span>
+        </div>
+      </div>
+    </div>
+    <div class="scale-label">1:1 &mdash; idle</div>
+  </div>
+</div>
+
+<!-- ==================== OPTION B: Centered Stack ==================== -->
+<div class="mockup-section">
+  <div class="mockup-label">Option B: Centered Stack with Edge Glow Bars</div>
+  <div class="mockup-desc">
+    Current temp dominates center-screen in large bold white &mdash; the number your eye hits first.
+    Target temp sits below it, smaller, in teal with a right-arrow prefix ("&rarr; 22.0")
+    reading as "heading toward". Left edge has two vertical glow bars inspired by the
+    heatctrl "Option D" aesthetic: amber = requested, red = actuator open.
+    When both are off, the bars vanish into the dark background.
+  </div>
+  <div class="mockup-pair">
+    <!-- 1:1 -->
+    <div>
+      <div class="screen optB">
+        <div class="edge-indicators">
+          <div class="ebar req-on"></div>
+          <div class="ebar heat-on"></div>
+        </div>
+        <div class="temps">
+          <div class="cur-row">
+            <span class="cur-temp">21.3</span>
+            <span class="cur-deg">&deg;C</span>
+          </div>
+          <div class="tgt-row">
+            <span class="tgt-arrow">&rarr;</span>
+            <span class="tgt-temp">22.0</span>
+            <span class="tgt-deg">&deg;C</span>
+          </div>
+        </div>
+        <div class="footer">
+          <span class="version">v1.3.2a hs-office-3</span>
+        </div>
+      </div>
+      <div class="scale-label">1:1 (320&times;170)</div>
+    </div>
+    <!-- 2x -->
+    <div>
+      <div class="screen optB x2">
+        <div class="edge-indicators" style="top:24px;bottom:44px;left:12px;gap:12px;">
+          <div class="ebar req-on" style="width:8px;height:56px;border-radius:4px;"></div>
+          <div class="ebar heat-on" style="width:8px;height:56px;border-radius:4px;"></div>
+        </div>
+        <div class="temps" style="top:16px;bottom:44px;left:40px;right:16px;">
+          <div class="cur-row" style="gap:8px;">
+            <span class="cur-temp" style="font-size:112px;">21.3</span>
+            <span class="cur-deg" style="font-size:40px;">&deg;C</span>
+          </div>
+          <div class="tgt-row" style="gap:8px;margin-top:8px;">
+            <span class="tgt-arrow" style="font-size:36px;">&rarr;</span>
+            <span class="tgt-temp" style="font-size:60px;">22.0</span>
+            <span class="tgt-deg" style="font-size:28px;">&deg;C</span>
+          </div>
+        </div>
+        <div class="footer" style="height:44px;padding:0 16px;">
+          <span class="version" style="font-size:18px;">v1.3.2a hs-office-3</span>
+        </div>
+      </div>
+      <div class="scale-label">2&times; zoom</div>
+    </div>
+  </div>
+
+  <!-- variant: only requested, not yet heating -->
+  <div style="margin-top:12px;">
+    <div class="mockup-label" style="font-size:14px; color:#777;">Option B &mdash; Requested but not yet heating</div>
+    <div class="screen optB" style="margin-top:6px;">
+      <div class="edge-indicators">
+        <div class="ebar req-on"></div>
+        <div class="ebar heat-off"></div>
+      </div>
+      <div class="temps">
+        <div class="cur-row">
+          <span class="cur-temp">20.8</span>
+          <span class="cur-deg">&deg;C</span>
+        </div>
+        <div class="tgt-row">
+          <span class="tgt-arrow">&rarr;</span>
+          <span class="tgt-temp">22.0</span>
+          <span class="tgt-deg">&deg;C</span>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="version">v1.3.2a hs-office-3</span>
+      </div>
+    </div>
+    <div class="scale-label">1:1 &mdash; requested only</div>
+  </div>
+
+  <!-- variant: idle -->
+  <div style="margin-top:8px;">
+    <div class="mockup-label" style="font-size:14px; color:#777;">Option B &mdash; Idle</div>
+    <div class="screen optB" style="margin-top:6px;">
+      <div class="edge-indicators">
+        <div class="ebar req-off"></div>
+        <div class="ebar heat-off"></div>
+      </div>
+      <div class="temps">
+        <div class="cur-row">
+          <span class="cur-temp">22.1</span>
+          <span class="cur-deg">&deg;C</span>
+        </div>
+        <div class="tgt-row">
+          <span class="tgt-arrow">&rarr;</span>
+          <span class="tgt-temp">22.0</span>
+          <span class="tgt-deg">&deg;C</span>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="version">v1.3.2a hs-office-3</span>
+      </div>
+    </div>
+    <div class="scale-label">1:1 &mdash; idle</div>
+  </div>
+</div>
+
+<!-- ==================== OPTION C: Comparison Bar ==================== -->
+<div class="mockup-section">
+  <div class="mockup-label">Option C: Comparison Bar</div>
+  <div class="mockup-desc">
+    Both temperatures flanking a horizontal progress bar. Current temp (white, left) and
+    target temp (teal, right) are the same large size for easy comparison. The bar between
+    them fills proportionally &mdash; showing how close current is to target. Bar border
+    and fill color change with state: dark gray = idle, amber border = requested,
+    red glow = actively heating. A white marker on the bar shows current position.
+    The bar itself IS the heating indicator &mdash; no separate status text needed.
+  </div>
+  <div class="mockup-pair">
+    <!-- 1:1 -->
+    <div>
+      <div class="screen optC">
+        <div class="layout">
+          <div class="temps-row">
+            <div class="cur-block">
+              <span class="temp-label cur-label">NOW</span>
+              <span class="temp-value cur-temp">21.3<span class="deg cur-deg">&deg;</span></span>
+            </div>
+            <div class="tgt-block">
+              <span class="temp-label tgt-label">TARGET</span>
+              <span class="temp-value tgt-temp">22.0<span class="deg tgt-deg">&deg;</span></span>
+            </div>
+          </div>
+          <div class="bar-container heating">
+            <div class="bar-fill heating" style="width:85%;"></div>
+            <div class="bar-marker" style="left:85%;"></div>
+          </div>
+          <div class="status-row">
+            <div class="status-item">
+              <div class="status-dot req-on"></div>
+              <span class="status-text">REQUESTED</span>
+            </div>
+            <div class="status-item">
+              <div class="status-dot heat-on"></div>
+              <span class="status-text">HEATING</span>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <span class="version">v1.3.2a hs-office-3</span>
+        </div>
+      </div>
+      <div class="scale-label">1:1 (320&times;170)</div>
+    </div>
+    <!-- 2x -->
+    <div>
+      <div class="screen optC x2">
+        <div class="layout" style="inset:16px 20px 44px 20px;gap:12px;">
+          <div class="temps-row" style="padding:0 4px;">
+            <div class="cur-block">
+              <span class="temp-label cur-label" style="font-size:20px;">NOW</span>
+              <span class="temp-value cur-temp" style="font-size:92px;">21.3<span class="deg cur-deg" style="font-size:36px;">&deg;</span></span>
+            </div>
+            <div class="tgt-block">
+              <span class="temp-label tgt-label" style="font-size:20px;">TARGET</span>
+              <span class="temp-value tgt-temp" style="font-size:92px;">22.0<span class="deg tgt-deg" style="font-size:36px;">&deg;</span></span>
+            </div>
+          </div>
+          <div class="bar-container heating" style="height:20px;border-radius:10px;border-width:2px;">
+            <div class="bar-fill heating" style="width:85%;border-radius:10px;"></div>
+            <div class="bar-marker" style="left:85%;width:4px;top:-4px;bottom:-4px;border-radius:2px;"></div>
+          </div>
+          <div class="status-row" style="gap:32px;margin-top:4px;">
+            <div class="status-item" style="gap:8px;">
+              <div class="status-dot req-on" style="width:12px;height:12px;"></div>
+              <span class="status-text" style="font-size:18px;">REQUESTED</span>
+            </div>
+            <div class="status-item" style="gap:8px;">
+              <div class="status-dot heat-on" style="width:12px;height:12px;"></div>
+              <span class="status-text" style="font-size:18px;">HEATING</span>
+            </div>
+          </div>
+        </div>
+        <div class="footer" style="height:44px;padding:0 20px;">
+          <span class="version" style="font-size:18px;">v1.3.2a hs-office-3</span>
+        </div>
+      </div>
+      <div class="scale-label">2&times; zoom</div>
+    </div>
+  </div>
+
+  <!-- variant: requested only -->
+  <div style="margin-top:12px;">
+    <div class="mockup-label" style="font-size:14px; color:#777;">Option C &mdash; Requested but not yet heating</div>
+    <div class="screen optC" style="margin-top:6px;">
+      <div class="layout">
+        <div class="temps-row">
+          <div class="cur-block">
+            <span class="temp-label cur-label">NOW</span>
+            <span class="temp-value cur-temp">20.8<span class="deg cur-deg">&deg;</span></span>
+          </div>
+          <div class="tgt-block">
+            <span class="temp-label tgt-label">TARGET</span>
+            <span class="temp-value tgt-temp">22.0<span class="deg tgt-deg">&deg;</span></span>
+          </div>
+        </div>
+        <div class="bar-container requested">
+          <div class="bar-fill requested" style="width:72%;"></div>
+          <div class="bar-marker" style="left:72%;"></div>
+        </div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot req-on"></div>
+            <span class="status-text">REQUESTED</span>
+          </div>
+          <div class="status-item">
+            <div class="status-dot heat-off"></div>
+            <span class="status-text">HEATING</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="version">v1.3.2a hs-office-3</span>
+      </div>
+    </div>
+    <div class="scale-label">1:1 &mdash; requested only</div>
+  </div>
+
+  <!-- variant: idle -->
+  <div style="margin-top:8px;">
+    <div class="mockup-label" style="font-size:14px; color:#777;">Option C &mdash; Idle</div>
+    <div class="screen optC" style="margin-top:6px;">
+      <div class="layout">
+        <div class="temps-row">
+          <div class="cur-block">
+            <span class="temp-label cur-label">NOW</span>
+            <span class="temp-value cur-temp">22.1<span class="deg cur-deg">&deg;</span></span>
+          </div>
+          <div class="tgt-block">
+            <span class="temp-label tgt-label">TARGET</span>
+            <span class="temp-value tgt-temp">22.0<span class="deg tgt-deg">&deg;</span></span>
+          </div>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill idle" style="width:100%;"></div>
+        </div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot req-off"></div>
+            <span class="status-text">REQUESTED</span>
+          </div>
+          <div class="status-item">
+            <div class="status-dot heat-off"></div>
+            <span class="status-text">HEATING</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="version">v1.3.2a hs-office-3</span>
+      </div>
+    </div>
+    <div class="scale-label">1:1 &mdash; idle</div>
+  </div>
+</div>
+
+<!-- Implementation Notes -->
+<div style="margin-top: 20px; padding: 20px; background: #111; border-radius: 8px; max-width: 700px;">
+  <h3 style="color: #ff8c00; margin-top: 0;">Implementation Notes</h3>
+  <ul style="color: #aaa; line-height: 1.8; font-size: 14px;">
+    <li><strong>Display:</strong> 320&times;170 px, dark background, LVGL 9.x</li>
+    <li><strong>Temperature distinction (no text labels):</strong> color (white vs teal), size (large vs smaller), position (left vs right, or top vs bottom) make it immediately obvious which is current and which is target</li>
+    <li><strong>Heating states (visual, minimal text):</strong>
+      <ul>
+        <li><strong>Option A:</strong> top status strip + center dots &mdash; amber/red color coding</li>
+        <li><strong>Option B:</strong> left-edge glow bars &mdash; inspired by heatctrl Option D. Most minimal: zero text for status</li>
+        <li><strong>Option C:</strong> progress bar itself conveys heating state through color and glow. Small dot+label row for clarity</li>
+      </ul>
+    </li>
+    <li><strong>Fonts needed:</strong> Rubik_Medium_48 (current temp), Rubik_Regular_36 (target temp), montserrat_16 (labels), montserrat_10 (meta)</li>
+    <li><strong>Color palette:</strong> #f0f0f0 (current temp), #4ecdc4 (target temp), #daa520 (requested), #e83030 (heating), #333-#666 (inactive/structure)</li>
+    <li><strong>LVGL features:</strong> flex/grid layout, border + shadow styles for glow, bg_opa for tinted backgrounds, lv_bar for Option C's progress bar</li>
+    <li><strong>State variants shown:</strong> Heating (both active), Requested-only (waiting for actuator), Idle (both off)</li>
+  </ul>
+</div>
+
+<div style="margin-top: 10px; padding: 20px; background: #111; border-radius: 8px; max-width: 700px;">
+  <h3 style="color: #4ecdc4; margin-top: 0;">Design Comparison</h3>
+  <table style="color: #aaa; font-size: 13px; border-collapse: collapse; width: 100%;">
+    <tr style="border-bottom: 1px solid #333;">
+      <th style="text-align:left; padding: 8px; color: #ccc;"></th>
+      <th style="text-align:center; padding: 8px; color: #ccc;">A: Split Panel</th>
+      <th style="text-align:center; padding: 8px; color: #ccc;">B: Centered Stack</th>
+      <th style="text-align:center; padding: 8px; color: #ccc;">C: Comparison Bar</th>
+    </tr>
+    <tr style="border-bottom: 1px solid #222;">
+      <td style="padding: 8px;">Text labels</td>
+      <td style="text-align:center; padding: 8px;">Minimal (tiny unit labels)</td>
+      <td style="text-align:center; padding: 8px;">None (arrow only)</td>
+      <td style="text-align:center; padding: 8px;">Tiny "NOW" / "TARGET"</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #222;">
+      <td style="padding: 8px;">Readability</td>
+      <td style="text-align:center; padding: 8px;">Both large</td>
+      <td style="text-align:center; padding: 8px;">Current = hero size</td>
+      <td style="text-align:center; padding: 8px;">Both equal size</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #222;">
+      <td style="padding: 8px;">Heating status</td>
+      <td style="text-align:center; padding: 8px;">Strip + dots</td>
+      <td style="text-align:center; padding: 8px;">Glow bars (most subtle)</td>
+      <td style="text-align:center; padding: 8px;">Bar color + dots</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #222;">
+      <td style="padding: 8px;">Visual complexity</td>
+      <td style="text-align:center; padding: 8px;">Medium</td>
+      <td style="text-align:center; padding: 8px;">Low (most clean)</td>
+      <td style="text-align:center; padding: 8px;">High (most info)</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">LVGL complexity</td>
+      <td style="text-align:center; padding: 8px;">Simple</td>
+      <td style="text-align:center; padding: 8px;">Simplest</td>
+      <td style="text-align:center; padding: 8px;">Medium (lv_bar)</td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
