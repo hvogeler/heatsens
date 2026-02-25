@@ -1,8 +1,8 @@
 # esp-idf
 
-. /Users/hvo/bin/esp-idf/export.sh
+. /Users/hvo/esp/esp-idf/export.sh
 
 # usb
 
 ls /dev/cu*
-export ESPPORT=/dev/cu.usbmodem1301
+export ESPPORT=/dev/cu.usbmodem1101
